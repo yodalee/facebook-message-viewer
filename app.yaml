@@ -8,3 +8,4 @@ handlers:
 - url: /.*
   script: messagedownloader.app
   secure: optional
+  login: required

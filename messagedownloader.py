@@ -1,12 +1,20 @@
 #-*- coding: UTF-8 -*-
 #/usr/bin/env python
 import sys
+import os
 
 import webapp2
 from google.appengine.api import users
 from google.appengine.ext import blobstore
 from google.appengine.ext import ndb
 from google.appengine.ext.webapp import blobstore_handlers
+
+import jinja2
+
+JINJA_ENVIRONMENT = jinja2.Environment(
+        loader = jinja2.FileSystemLoader('template'),
+        extensions=['jinja2.ext.autoescape'],
+        autoescape=True)
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -52,7 +60,8 @@ class MessageViewHandler(webapp2.RequestHandler):
         if len(msgblob) == 0:
             self.redirect('upload')
 
-        self.response.out.write("Hello World!")
+        template = JINJA_ENVIRONMENT.get_template('view.html')
+        self.response.write(template.render())
 
 
 class RedirectHandler(webapp2.RequestHandler):

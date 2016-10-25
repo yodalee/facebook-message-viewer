@@ -32,9 +32,9 @@ class MessageUploadFormHandler(blobstore_handlers.BlobstoreUploadHandler):
             self.error(500)
 
 
-class MainPage(webapp2.RequestHandler):
+class MessageUploadForm(webapp2.RequestHandler):
     def get(self):
-        upload_url = blobstore.create_upload_url('/upload')
+        upload_url = blobstore.create_upload_url('/uploadhandler')
         self.response.out.write("""
 <html><body>
 <form action="{0}" method="POST" enctype="multipart/form-data">
@@ -46,11 +46,22 @@ class MainPage(webapp2.RequestHandler):
 
 class MessageViewHandler(webapp2.RequestHandler):
     def get(self):
-        self.response.write("Hello World")
+        query = UserMessage.query(
+                UserMessage.user == users.get_current_user().user_id())
+        msgblob = query.fetch()
+        if len(msgblob) == 0:
+            self.redirect('upload')
 
+        self.response.out.write("Hello World!")
+
+
+class RedirectHandler(webapp2.RequestHandler):
+    def get(self):
+        self.redirect('/view')
 
 app = webapp2.WSGIApplication([
-    ('/', MainPage),
-    ('/upload', MessageUploadFormHandler),
     ('/view', MessageViewHandler),
+    ('/upload', MessageUploadForm),
+    ('/uploadhandler', MessageUploadFormHandler),
+    ('/.*', RedirectHandler),
 ], debug=True)

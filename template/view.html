@@ -4,6 +4,14 @@
   <title>view</title>
 </head>
 <body>
-  Hello world!
+  {% if userExist == False %}
+    You didn't upload any message yet. Please upload it first.
+  {% else %}
+    {% if hasData %}
+    You have data in our datastore.
+    {% else %}
+    You don't have data in our datastore.
+    {% endif %}
+  {% endif %}
 </body>
 </html>

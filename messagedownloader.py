@@ -11,6 +11,8 @@ from google.appengine.ext.webapp import blobstore_handlers
 
 import jinja2
 
+from dbmodel import UserMessage
+
 JINJA_ENVIRONMENT = jinja2.Environment(
         loader = jinja2.FileSystemLoader('template'),
         extensions=['jinja2.ext.autoescape'],
@@ -58,8 +60,8 @@ class MessageUploadForm(webapp2.RequestHandler):
 
 class MessageViewHandler(webapp2.RequestHandler):
     def get(self):
-        query = UserMessage.query(
-                UserMessage.user == users.get_current_user().user_id())
+        user_id = users.get_current_user().user_id()
+        query = UserMessage.query(UserMessage.user == user_id)
         userdata = query.fetch()
         template_values = {
             'userExist': True,
@@ -82,6 +84,5 @@ app = webapp2.WSGIApplication([
     ('/view', MessageViewHandler),
     ('/upload', MessageUploadForm),
     ('/uploadhandler', MessageUploadFormHandler),
-    ('/update_user', MessageProcessHandler),
     ('/.*', RedirectHandler),
 ], debug=True)

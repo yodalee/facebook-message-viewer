@@ -2,10 +2,12 @@
 #/usr/bin/env python
 import sys
 import os
+import logging
 
 import webapp2
 from google.appengine.api import users
 from google.appengine.ext import blobstore
+from google.appengine.api import taskqueue
 from google.appengine.ext import ndb
 from google.appengine.ext.webapp import blobstore_handlers
 
@@ -34,11 +36,21 @@ class MessageUploadFormHandler(blobstore_handlers.BlobstoreUploadHandler):
             upload = self.get_uploads()[0]
             blob_key = upload.key()
             user_id = users.get_current_user().user_id()
+
+            logging.info("blob_key: {}, user_id: {}".format(blob_key, user_id))
+            logging.info("{}".format(type(user_id)))
+
             user_message = UserMessage(
                 user=user_id,
                 isReady=False,
                 blob_key=blob_key)
-            user_message.put()
+            user_key = user_message.put()
+
+            task = taskqueue.add(
+                url='/parse',
+                params={
+                    'blob_key':blob_key,
+                    'user_key':user_key.urlsafe()})
 
             self.redirect('/view')
 

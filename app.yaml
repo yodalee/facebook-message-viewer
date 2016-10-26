@@ -5,6 +5,12 @@ api_version: 1
 threadsafe: true
 
 handlers:
+# taskqueue
+- url: /parse
+  script: worker.app
+  login: admin
+
+# normal request
 - url: /.*
   script: messagedownloader.app
   secure: optional

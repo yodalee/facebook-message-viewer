@@ -13,7 +13,7 @@ from google.appengine.ext.webapp import blobstore_handlers
 
 import jinja2
 
-from dbmodel import UserMessage
+from dbmodel import dbUser, dbGroup, dbMessage
 
 JINJA_ENVIRONMENT = jinja2.Environment(
         loader = jinja2.FileSystemLoader('template'),
@@ -22,12 +22,6 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
-
-# Basic datastruct in user blob
-class UserMessage(ndb.Model):
-    user = ndb.StringProperty()
-    blob_key = ndb.BlobKeyProperty()
-    isReady = ndb.BooleanProperty()
 
 
 class MessageUploadFormHandler(blobstore_handlers.BlobstoreUploadHandler):
@@ -38,9 +32,9 @@ class MessageUploadFormHandler(blobstore_handlers.BlobstoreUploadHandler):
             user_id = users.get_current_user().user_id()
 
             logging.info("blob_key: {}, user_id: {}".format(blob_key, user_id))
-            logging.info("{}".format(type(user_id)))
+            logging.info("{}".format(type(blob_key)))
 
-            user_message = UserMessage(
+            user_message = dbUser(
                 user=user_id,
                 isReady=False,
                 blob_key=blob_key)
@@ -73,7 +67,7 @@ class MessageUploadForm(webapp2.RequestHandler):
 class MessageViewHandler(webapp2.RequestHandler):
     def get(self):
         user_id = users.get_current_user().user_id()
-        query = UserMessage.query(UserMessage.user == user_id)
+        query = dbUser.query(dbUser.user == user_id)
         userdata = query.fetch()
         template_values = {
             'userExist': True,

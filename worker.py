@@ -22,6 +22,7 @@ class ParseHandler(blobstore_handlers.BlobstoreDownloadHandler):
     xpathTime = ".//span[@class='meta']//text()"
 
 
+    @ndb.toplevel
     def post(self):
         blob_key = self.request.get('blob_key')
         url_str = self.request.get('user_key')
@@ -40,31 +41,38 @@ class ParseHandler(blobstore_handlers.BlobstoreDownloadHandler):
         # start processing
         threads = content.xpath(self.xpathThread)
         processed = 0
+        msgbuf = [None] * 512
+
         print("Process start")
         starttime = time.time()
 
         for thread in threads:
-            print("Process: {}, progress {}/{}".format(thread.text, processed, len(threads)))
+            members = thread.text.strip()
+            print("Process: {}, progress {}/{}".format(members, processed, len(threads)))
             group = dbGroup(
                 user_key = user_key,
-                group = thread.text)
+                group = members)
 
             group_key = group.put()
 
             messages = thread.xpath(self.xpathMessage)
-            for meta in messages:
+            remain = len(messages) & 0x1ff
+            for i,meta in enumerate(messages):
                 author = meta.xpath(self.xpathAuthor)[0]
                 msgtime = meta.xpath(self.xpathTime)[0]
                 text = meta.getnext().text
 
-                # print("{} at {}: {}".format(author, time, text))
-
-                msg = dbMessage(
+                msgbuf[i&0x1ff] = dbMessage(
                     group_key = group_key,
                     author = author,
                     time = msgtime,
                     content = text)
-                msg.put()
+
+                if i == 511:
+                    ndb.put_multi_async(msgbuf)
+
+            if remain != 0:
+                ndb.put_multi_async(msgbuf[:remain])
 
             processed = processed + 1
 

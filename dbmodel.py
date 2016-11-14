@@ -15,5 +15,5 @@ class dbGroup(ndb.Model):
 class dbMessage(ndb.Model):
     group_key = ndb.KeyProperty(kind=dbGroup, required=True)
     author = ndb.StringProperty()
-    time = ndb.StringProperty()
+    time = ndb.DateTimeProperty()
     content = ndb.TextProperty()

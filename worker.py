@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from google.appengine.ext import ndb
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext import blobstore
@@ -7,6 +8,7 @@ import time
 import logging
 from lxml import etree
 import sys
+import datetime
 
 from dbmodel import dbUser, dbGroup, dbMessage
 
@@ -21,6 +23,9 @@ class ParseHandler(blobstore_handlers.BlobstoreDownloadHandler):
     xpathAuthor = ".//span[@class='user']//text()"
     xpathTime = ".//span[@class='meta']//text()"
 
+    REdict = {
+        "zh_tw": "%Y年%m月%d日 %H:%M" # 2015年1月18日 23:20 UTC+08
+    }
 
     @ndb.toplevel
     def post(self):
@@ -59,7 +64,11 @@ class ParseHandler(blobstore_handlers.BlobstoreDownloadHandler):
             remain = len(messages) & 0x1ff
             for i,meta in enumerate(messages):
                 author = meta.xpath(self.xpathAuthor)[0]
-                msgtime = meta.xpath(self.xpathTime)[0]
+                timetext = meta.xpath(self.xpathTime)[0].strip()
+                # cut down last string "UTC+08"
+                # which cause dateparser failed to parse
+                timetext = timetext.rsplit(" ", 1)[0]
+                msgtime = datetime.datetime.strptime(timetext, self.REdict["zh_tw"])
                 text = meta.getnext().text
 
                 msgbuf[i&0x1ff] = dbMessage(

@@ -3,13 +3,19 @@
     <form action="{{ upload_url }}" method="POST" enctype="multipart/form-data">
       Upload Message.htm: <input type="file" name="file"><br>
       Choose Your Language:
-      <select name="lang">
+      <select name="lang" id="lang" onchange="checklang()">
         <option value="">----</option>
         {% for lang in langs %}
           <option value="{{ lang }}">{{ lang }}</option>
         {% endfor %}
       </select></br>
-      <input type="submit" name="submit" value="Submit">
+      <input type="submit" id="submit" name="submit" value="Submit" disabled=true>
     </form>
+    <script>
+      function checklang() {
+        var value = document.getElementById("lang").value
+        document.getElementById("submit").disabled = (value == "")
+      }
+    </script>
   </body>
 </html>

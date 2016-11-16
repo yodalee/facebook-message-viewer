@@ -30,8 +30,10 @@ class MessageUploadFormHandler(blobstore_handlers.BlobstoreUploadHandler):
             upload = self.get_uploads()[0]
             blob_key = upload.key()
             user_id = users.get_current_user().user_id()
+            lang = self.request.params.get(u'lang') # have to use unicode for unknown reason
 
-            logging.info("blob_key: {}, user_id: {}".format(blob_key, user_id))
+            logging.info("blob_key: {}, user_id: {}, lang: {}".format(
+                blob_key, user_id, lang))
             logging.info("{}".format(type(blob_key)))
 
             user_message = dbUser(
@@ -44,7 +46,10 @@ class MessageUploadFormHandler(blobstore_handlers.BlobstoreUploadHandler):
                 url='/parse',
                 params={
                     'blob_key':blob_key,
-                    'user_key':user_key.urlsafe()})
+                    'user_key':user_key.urlsafe(),
+                    'lang'    :lang
+                }
+            )
 
             self.redirect('/view')
 
@@ -55,14 +60,14 @@ class MessageUploadFormHandler(blobstore_handlers.BlobstoreUploadHandler):
 class MessageUploadForm(webapp2.RequestHandler):
     def get(self):
         upload_url = blobstore.create_upload_url('/uploadhandler')
-        self.response.out.write("""
-<html><body>
-<form action="{0}" method="POST" enctype="multipart/form-data">
-    Upload Message.htm: <input type="file" name="file"><br>
-    <input type="submit" name="submit" value="Submit">
-</form>
-</body></html>""".format(upload_url))
-
+        template = JINJA_ENVIRONMENT.get_template('upload.html')
+        template_values = {
+            'upload_url': upload_url,
+            'langs': {
+                "zh_tw",
+            }
+        }
+        self.response.write(template.render(template_values))
 
 class MessageViewHandler(webapp2.RequestHandler):
     def get(self):

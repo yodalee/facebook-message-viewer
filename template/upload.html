@@ -1,0 +1,15 @@
+<html>
+  <body>
+    <form action="{{ upload_url }}" method="POST" enctype="multipart/form-data">
+      Upload Message.htm: <input type="file" name="file"><br>
+      Choose Your Language:
+      <select name="lang">
+        <option value="">----</option>
+        {% for lang in langs %}
+          <option value="{{ lang }}">{{ lang }}</option>
+        {% endfor %}
+      </select></br>
+      <input type="submit" name="submit" value="Submit">
+    </form>
+  </body>
+</html>

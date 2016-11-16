@@ -31,7 +31,9 @@ class ParseHandler(blobstore_handlers.BlobstoreDownloadHandler):
     def post(self):
         blob_key = self.request.get('blob_key')
         url_str = self.request.get('user_key')
-        logging.info("blob_key: {}, user_key: {}".format(blob_key, url_str))
+        lang = self.request.get('lang')
+        logging.info("blob_key: {}, user_key: {}, lang: {}".format(
+            blob_key, url_str, lang))
 
         user_key = ndb.Key(urlsafe=url_str)
         # fetch the blob
@@ -68,7 +70,7 @@ class ParseHandler(blobstore_handlers.BlobstoreDownloadHandler):
                 # cut down last string "UTC+08"
                 # which cause dateparser failed to parse
                 timetext = timetext.rsplit(" ", 1)[0]
-                msgtime = datetime.datetime.strptime(timetext, self.REdict["zh_tw"])
+                msgtime = datetime.datetime.strptime(timetext, self.REdict[lang])
                 text = meta.getnext().text
 
                 msgbuf[i&0x1ff] = dbMessage(

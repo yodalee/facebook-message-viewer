@@ -11,6 +11,7 @@ import sys
 import datetime
 
 from dbmodel import dbUser, dbGroup, dbMessage
+from config import REdict
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -22,10 +23,6 @@ class ParseHandler(blobstore_handlers.BlobstoreDownloadHandler):
     xpathMessage = ".//div[@class='message']"
     xpathAuthor = ".//span[@class='user']//text()"
     xpathTime = ".//span[@class='meta']//text()"
-
-    REdict = {
-        "zh_tw": "%Y年%m月%d日 %H:%M" # 2015年1月18日 23:20 UTC+08
-    }
 
     @ndb.toplevel
     def post(self):
@@ -70,7 +67,8 @@ class ParseHandler(blobstore_handlers.BlobstoreDownloadHandler):
                 # cut down last string "UTC+08"
                 # which cause dateparser failed to parse
                 timetext = timetext.rsplit(" ", 1)[0]
-                msgtime = datetime.datetime.strptime(timetext, self.REdict[lang])
+                msgtime = datetime.datetime.strptime(
+                        timetext, REdict[lang]["parseStr"])
                 text = meta.getnext().text.strip()
 
                 msgbuf[i&0x1ff] = dbMessage(

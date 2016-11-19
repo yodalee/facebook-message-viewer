@@ -5,8 +5,8 @@
       Choose Your Language:
       <select name="lang" id="lang" onchange="checklang()">
         <option value="">----</option>
-        {% for lang in langs %}
-          <option value="{{ lang }}">{{ lang }}</option>
+        {% for key,value in langs.iteritems() %}
+          <option value="{{ key }}">{{ value['showName'] }}</option>
         {% endfor %}
       </select></br>
       <input type="submit" id="submit" name="submit" value="Submit" disabled=true>

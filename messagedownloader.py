@@ -16,6 +16,7 @@ from google.appengine.ext.webapp import blobstore_handlers
 import jinja2
 
 from dbmodel import dbUser, dbGroup, dbMessage
+from config import REdict
 
 JINJA_ENVIRONMENT = jinja2.Environment(
         loader = jinja2.FileSystemLoader('template'),
@@ -65,9 +66,7 @@ class MessageUploadForm(webapp2.RequestHandler):
         template = JINJA_ENVIRONMENT.get_template('upload.html')
         template_values = {
             'upload_url': upload_url,
-            'langs': {
-                "zh_tw",
-            }
+            'langs': REdict,
         }
         self.response.write(template.render(template_values))
 

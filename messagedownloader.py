@@ -90,10 +90,11 @@ class MessageFetchHandler(webapp2.RequestHandler):
                 self.response.out.write(json.dumps({"user": []}))
             else:
                 self.response.out.write(json.dumps({"user": userdata[0].user}))
-        elif reqType == "group":
+        elif reqType == "groups":
             dbGroupList = dbGroup.query(dbGroup.user_key == userdata[0].key).fetch()
             groups = [i.group for i in dbGroupList]
-            self.response.out.write(json.dumps({"group": groups}))
+            print("Get {} groups".format(len(groups)))
+            self.response.out.write(json.dumps({"groups": groups}))
 
         elif reqType == "message":
             groupname = self.request.get("group")
@@ -114,9 +115,9 @@ class MessageFetchHandler(webapp2.RequestHandler):
 
             ret = [{"author": msg.author,
                 "time": msg.time.strftime("%Y-%m-%d %H:%M"),
-                "message": msg.content} for msg in msgQuery]
+                "content": msg.content} for msg in msgQuery]
 
-            self.response.out.write(json.dumps({"message": ret}))
+            self.response.out.write(json.dumps({"messages": ret}))
 
 
 class RedirectHandler(webapp2.RequestHandler):

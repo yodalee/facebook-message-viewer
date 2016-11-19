@@ -13,7 +13,8 @@
     "bootstrap": "^3.3.7",
     "sass-loader": "^4.0.2",
     "superagent": "^2.3.0",
-    "vue": "^2.0.1"
+    "vue": "^2.0.1",
+    "vue-moment": "^2.0.2"
   },
   "devDependencies": {
     "autoprefixer": "^6.4.0",

@@ -65,13 +65,13 @@ class ParseHandler(blobstore_handlers.BlobstoreDownloadHandler):
             messages = thread.xpath(self.xpathMessage)
             remain = len(messages) & 0x1ff
             for i,meta in enumerate(messages):
-                author = meta.xpath(self.xpathAuthor)[0]
+                author = meta.xpath(self.xpathAuthor)[0].strip()
                 timetext = meta.xpath(self.xpathTime)[0].strip()
                 # cut down last string "UTC+08"
                 # which cause dateparser failed to parse
                 timetext = timetext.rsplit(" ", 1)[0]
                 msgtime = datetime.datetime.strptime(timetext, self.REdict[lang])
-                text = meta.getnext().text
+                text = meta.getnext().text.strip()
 
                 msgbuf[i&0x1ff] = dbMessage(
                     group_key = group_key,

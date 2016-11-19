@@ -3,6 +3,8 @@
 import sys
 import os
 import logging
+import json
+import datetime
 
 import webapp2
 from google.appengine.api import users
@@ -71,20 +73,51 @@ class MessageUploadForm(webapp2.RequestHandler):
 
 class MessageViewHandler(webapp2.RequestHandler):
     def get(self):
-        user_id = users.get_current_user().user_id()
-        query = dbUser.query(dbUser.user == user_id)
-        userdata = query.fetch()
-        template_values = {
-            'userExist': True,
-            'hasData': True,
-        }
-        if len(userdata) == 0:
-            template_values['userExist'] = False
-        else:
-            template_values['hasData'] = userdata[0].isReady
-
         template = JINJA_ENVIRONMENT.get_template('view.html')
-        self.response.write(template.render(template_values))
+        self.response.write(template.render())
+
+
+class MessageFetchHandler(webapp2.RequestHandler):
+    def get(self):
+        reqType = self.request.get("type")
+        print("API request type: {}".format(reqType))
+        user_id = users.get_current_user().user_id()
+        userdata = dbUser.query(dbUser.user == user_id).fetch()
+
+        self.response.headers['Content-Type'] = "application/json"
+
+        if reqType == "user":
+            if not userdata or not userdata[0].isReady:
+                self.response.out.write(json.dumps({"user": []}))
+            else:
+                self.response.out.write(json.dumps({"user": userdata[0].user}))
+        elif reqType == "group":
+            dbGroupList = dbGroup.query(dbGroup.user_key == userdata[0].key).fetch()
+            groups = [i.group for i in dbGroupList]
+            self.response.out.write(json.dumps({"group": groups}))
+
+        elif reqType == "message":
+            groupname = self.request.get("group")
+            startstr = self.request.get("startdate")
+            startdate = datetime.datetime.strptime(startstr or "20010101", "%Y%m%d")
+            endstr = self.request.get("enddate")
+            if endstr:
+                enddate = datetime.datetime.strptime(endstr, "%Y%m%d")
+            else:
+                enddate = datetime.datetime.today()
+
+            group = dbGroup.query(dbGroup.group == groupname).fetch()[0]
+
+            msgQuery = dbMessage.query(
+                ndb.AND(dbMessage.group_key == group.key,
+                    dbMessage.time > startdate,
+                    dbMessage.time < enddate)).order(dbMessage.time).fetch()
+
+            ret = [{"author": msg.author,
+                "time": msg.time.strftime("%Y-%m-%d %H:%M"),
+                "message": msg.content} for msg in msgQuery]
+
+            self.response.out.write(json.dumps({"message": ret}))
 
 
 class RedirectHandler(webapp2.RequestHandler):
@@ -93,6 +126,7 @@ class RedirectHandler(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/view', MessageViewHandler),
+    ('/fetch', MessageFetchHandler),
     ('/upload', MessageUploadForm),
     ('/uploadhandler', MessageUploadFormHandler),
     ('/.*', RedirectHandler),

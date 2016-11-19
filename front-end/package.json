@@ -10,6 +10,7 @@
     "lint": "eslint --ext .js,.vue src"
   },
   "dependencies": {
+    "bootstrap": "^3.3.7",
     "superagent": "^2.3.0",
     "vue": "^2.0.1"
   },

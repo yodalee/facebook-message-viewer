@@ -6,7 +6,7 @@
 
         <ul v-if="groups.length > 0">
           <li v-for="group in groups" @click="show(group)">
-            <group-item :member="group.split(/,/g)"></group-item>
+            <group-item :member="group.split(/,/g)" :selected="group == display_group"></group-item>
           </li>
         </ul>
         <p v-else>No Groups Data</p>

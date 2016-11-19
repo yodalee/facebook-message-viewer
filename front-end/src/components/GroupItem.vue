@@ -1,5 +1,5 @@
 <template>
-  <div class="group">
+  <div class="group" :class="{selected: selected}">
     <span v-for="name in member">{{name}} </span>
   </div>
 </template>
@@ -12,6 +12,10 @@ export default {
       default () {
         return ['No', 'Mem', 'Ber']
       }
+    },
+    selected: {
+      type: Boolean,
+      default: false
     }
   }
 }
@@ -30,5 +34,9 @@ export default {
     display: inline-block;
     padding: 0 .2em;
   }
+}
+
+.selected {
+  background-color: hsl(187, 90%, 64%);
 }
 </style>

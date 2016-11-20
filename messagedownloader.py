@@ -7,7 +7,13 @@ import json
 import datetime
 
 import jinja2
-from bottle import route, run, template, static_file
+from bottle import route
+from bottle import run
+from bottle import template
+from bottle import static_file
+from bottle import request
+from bottle import abort
+from bottle import redirect
 
 from config import REdict
 
@@ -20,37 +26,15 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 
-@route('/uploadhandler')
+@route('/uploadhandler', method="POST")
 def MessageUploadFormHandler():
-    try:
-        upload = self.get_uploads()[0]
-        blob_key = upload.key()
-        user_id = users.get_current_user().user_id()
-        lang = self.request.params.get(u'lang') # have to use unicode for unknown reason
+    lang = request.forms.get(u'lang')
+    data = request.files.file
+    filename = data.filename
 
-        logging.info("blob_key: {}, user_id: {}, lang: {}".format(
-            blob_key, user_id, lang))
-        logging.info("{}".format(type(blob_key)))
+    print("lang: {}, filename: {}".format(lang, filename))
 
-        user_message = dbUser(
-            user=user_id,
-            isReady=False,
-            blob_key=blob_key)
-        user_key = user_message.put()
-
-        task = taskqueue.add(
-            url='/parse',
-            params={
-                'blob_key':blob_key,
-                'user_key':user_key.urlsafe(),
-                'lang'    :lang
-            }
-        )
-
-        self.redirect('/view')
-
-    except:
-        self.error(500)
+    return "uploaded"
 
 @route('/upload')
 def MessageUploadForm():
@@ -115,4 +99,4 @@ def MessageFetchHandler():
         self.response.out.write(json.dumps({"messages": ret}))
 
 
-run(host='localhost', port=8080)
+run(host='localhost', port=8080, reloader=True)

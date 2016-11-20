@@ -5,6 +5,7 @@ import os
 import logging
 import json
 import datetime
+import subprocess
 
 import sqlite3
 import jinja2
@@ -34,13 +35,19 @@ def MessageUploadFormHandler():
     filename = data.filename
     file_content = data.file.read()
 
+    print("lang: {}, filename: {}".format(lang, filename))
+
+    # store database
     db = sqlite3.connect("user.db")
     c = db.cursor()
     query = "INSERT INTO dbUser (file, isReady) VALUES (?, 0)"
-    db.execute(query, [sqlite3.Binary(file_content)])
+    c.execute(query, [sqlite3.Binary(file_content)])
+    userid = str(c.lastrowid)
+
     db.commit()
 
-    print("lang: {}, filename: {}".format(lang, filename))
+    # invoke another process to processing
+    subprocess.call(['python2.7', 'worker.py', lang, userid])
 
     redirect('/view')
 

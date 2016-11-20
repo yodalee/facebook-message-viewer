@@ -20,6 +20,9 @@ class ParseHandler():
     xpathAuthor = ".//span[@class='user']//text()"
     xpathTime = ".//span[@class='meta']//text()"
 
+    grpinsert = "INSERT INTO dbGroup (userid, members) VALUES (?, ?)"
+    msginsert = "INSERT INTO dbMessage (groupid, author, time, content) VALUES (?,?,?,?)"
+
     def parse(self, lang, userid):
         logging.info("user_id: {}, lang: {}".format(userid, lang))
 
@@ -42,12 +45,13 @@ class ParseHandler():
 
         print("Process start")
         starttime = time.time()
+        idx = 0
+        msgbuf = [None] * 512
 
         for thread in threads:
             members = thread.text.strip()
 
-            query = "INSERT INTO dbGroup (userid, members) VALUES (?, ?)"
-            c.execute(query, (userid, members))
+            c.execute(self.grpinsert, (userid, members))
             groupid = c.lastrowid
             db.commit()
 
@@ -65,12 +69,18 @@ class ParseHandler():
                         timetext, REdict[lang]["parseStr"])
                 text = meta.getnext().text.strip()
 
-                msgquery = "INSERT INTO dbMessage (groupid, author, time, content) VALUES (?,?,?,?)"
+                msgbuf[idx] = (groupid, author, msgtime, text)
 
-                c.execute(msgquery, (groupid, author, msgtime, text, ))
-                db.commit()
+                idx = idx + 1
+                if idx == 512:
+                    idx = 0
+                    c.executemany(self.msginsert, msgbuf)
+                    db.commit()
 
             processed = processed + 1
+
+        if idx != 0:
+            c.executemany(self.msginsert, msgbuf[:idx])
 
         # # update user info
         endtime = time.time()

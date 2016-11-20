@@ -16,6 +16,7 @@ from bottle import static_file
 from bottle import request
 from bottle import abort
 from bottle import redirect
+from bottle import response
 
 from config import REdict
 
@@ -71,46 +72,44 @@ def callback(path):
     return static_file(path, root='static')
 
 
+@route('/fetch')
 def MessageFetchHandler():
-    reqType = self.request.get("type")
+    reqType = request.query.type
     print("API request type: {}".format(reqType))
-    user_id = users.get_current_user().user_id()
-    userdata = dbUser.query(dbUser.user == user_id).fetch()
+    userid = 1
+    db = sqlite3.connect("user.db")
+    c = db.cursor()
 
-    self.response.headers['Content-Type'] = "application/json"
+    response.content_type = "application/json"
 
     if reqType == "user":
-        if not userdata or not userdata[0].isReady:
-            self.response.out.write(json.dumps({"user": []}))
-        else:
-            self.response.out.write(json.dumps({"user": userdata[0].user}))
+        pass
     elif reqType == "groups":
-        dbGroupList = dbGroup.query(dbGroup.user_key == userdata[0].key).fetch()
-        groups = [i.group for i in dbGroupList]
+        c.execute('SELECT members FROM dbGroup WHERE userid=?', (userid,))
+        groups = [i[0] for i in c.fetchall()]
         print("Get {} groups".format(len(groups)))
-        self.response.out.write(json.dumps({"groups": groups}))
+        return json.dumps({"groups": groups})
 
     elif reqType == "message":
-        groupname = self.request.get("group")
-        startstr = self.request.get("startdate")
+        groupname = request.query.group
+        startstr = request.query.startdate
         startdate = datetime.datetime.strptime(startstr or "20010101", "%Y%m%d")
-        endstr = self.request.get("enddate")
+        endstr = request.query.enddate
         if endstr:
             enddate = datetime.datetime.strptime(endstr, "%Y%m%d")
         else:
             enddate = datetime.datetime.today()
 
-        group = dbGroup.query(dbGroup.group == groupname).fetch()[0]
+        c.execute('SELECT rowid FROM dbGroup WHERE members=?', (groupname,))
+        groupid = c.fetchone()[0]
 
-        msgQuery = dbMessage.query(
-            ndb.AND(dbMessage.group_key == group.key,
-                dbMessage.time > startdate,
-                dbMessage.time < enddate)).order(dbMessage.time).fetch()
+        c.execute('SELECT * FROM dbMessage WHERE groupid=?', (groupid,))
+        msgQuery = c.fetchmany(300)
 
-        ret = [{"author": msg.author,
-            "time": msg.time.strftime("%Y-%m-%d %H:%M"),
-            "content": msg.content} for msg in msgQuery]
+        ret = [{"author": msg[1],
+            "time": msg[2],
+            "content": msg[3]} for msg in msgQuery]
 
-        self.response.out.write(json.dumps({"messages": ret}))
+        return json.dumps({"messages": ret})
 
 run(host='localhost', port=8080, reloader=True)

@@ -6,6 +6,7 @@ import logging
 import json
 import datetime
 
+import sqlite3
 import jinja2
 from bottle import route
 from bottle import run
@@ -31,10 +32,17 @@ def MessageUploadFormHandler():
     lang = request.forms.get(u'lang')
     data = request.files.file
     filename = data.filename
+    file_content = data.file.read()
+
+    db = sqlite3.connect("user.db")
+    c = db.cursor()
+    query = "INSERT INTO dbUser (file, isReady) VALUES (?, 0)"
+    db.execute(query, [sqlite3.Binary(file_content)])
+    db.commit()
 
     print("lang: {}, filename: {}".format(lang, filename))
 
-    return "uploaded"
+    redirect('/view')
 
 @route('/upload')
 def MessageUploadForm():
@@ -97,6 +105,5 @@ def MessageFetchHandler():
             "content": msg.content} for msg in msgQuery]
 
         self.response.out.write(json.dumps({"messages": ret}))
-
 
 run(host='localhost', port=8080, reloader=True)

@@ -48,7 +48,7 @@ def MessageUploadFormHandler():
     db.commit()
 
     # invoke another process to processing
-    subprocess.call(['python2.7', 'worker.py', lang, userid])
+    popen = subprocess.Popen(['python2.7', 'worker.py', lang, userid])
 
     redirect('/view')
 
@@ -100,10 +100,12 @@ def MessageFetchHandler():
         else:
             enddate = datetime.datetime.today()
 
-        c.execute('SELECT rowid FROM dbGroup WHERE members=?', (groupname,))
+        c.execute("SELECT rowid FROM dbGroup WHERE members=?", (groupname,))
         groupid = c.fetchone()[0]
 
-        c.execute('SELECT * FROM dbMessage WHERE groupid=?', (groupid,))
+        c.execute("SELECT * FROM dbMessage " \
+            "WHERE groupid=? AND time >= ? AND time < ?" \
+            "ORDER BY time", (groupid, startdate, enddate, ))
         msgQuery = c.fetchmany(300)
 
         ret = [{"author": msg[1],

@@ -14,11 +14,12 @@ sys.setdefaultencoding("utf-8")
 
 
 class ParseHandler():
-    xpathContent = "//div[@class='contents']"
-    xpathThread = ".//div[@class='thread']"
-    xpathMessage = ".//div[@class='message']"
-    xpathAuthor = ".//span[@class='user']//text()"
-    xpathTime = ".//span[@class='meta']//text()"
+    xpathContent = etree.XPath("//div[@class='contents']")
+    xpathThread  = etree.XPath(".//div[@class='thread']")
+    xpathMessage = etree.XPath(".//div[@class='message']")
+    xpathAuthor  = etree.XPath(".//span[@class='user']//text()")
+    xpathTime    = etree.XPath(".//span[@class='meta']//text()")
+    xpathText    = etree.XPath(".//p")
 
     grpinsert = "INSERT INTO dbGroup (userid, members) VALUES (?, ?)"
     msginsert = "INSERT INTO dbMessage (groupid, author, time, content) VALUES (?,?,?,?)"
@@ -36,12 +37,14 @@ class ParseHandler():
         root = etree.parse(StringIO(s), parser)
 
         # process group
-        content = root.xpath(self.xpathContent)[0]
+        content = self.xpathContent(root)[0]
 
         # start processing
-        threads = content.xpath(self.xpathThread)
+        threads = self.xpathThread(content)
         groupnum = len(threads)
         processed = 0
+
+        grouplist = dict()
 
         print("Process start")
         starttime = time.time()
@@ -51,23 +54,31 @@ class ParseHandler():
         for thread in threads:
             members = thread.text.strip()
 
-            c.execute(self.grpinsert, (userid, members))
-            groupid = c.lastrowid
-            db.commit()
+            if members in grouplist:
+                groupid = grouplist[members]
+            else:
+                c.execute(self.grpinsert, (userid, members))
+                groupid = c.lastrowid
+                grouplist[members] = groupid
+                db.commit()
 
             print("Process id {}: {}, progress {}/{}".format(
                 groupid, members, processed, groupnum))
 
-            messages = thread.xpath(self.xpathMessage)
-            for meta in messages:
-                author = meta.xpath(self.xpathAuthor)[0].strip()
-                timetext = meta.xpath(self.xpathTime)[0].strip()
+            authorlist = self.xpathAuthor(thread)
+            timelist = self.xpathTime(thread)
+            textlist = self.xpathText(thread)
+
+            for author, timetext, text in zip(authorlist, timelist, textlist):
+                author = author.strip()
+
                 # cut down last string "UTC+08"
                 # which cause dateparser failed to parse
-                timetext = timetext.rsplit(" ", 1)[0]
+                timetext = timetext.strip().rsplit(" ", 1)[0]
                 msgtime = datetime.datetime.strptime(
                         timetext, REdict[lang]["parseStr"])
-                text = meta.getnext().text.strip()
+
+                text = text.text or ""
 
                 msgbuf[idx] = (groupid, author, msgtime, text)
 

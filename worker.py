@@ -24,32 +24,54 @@ class ParseHandler():
     grpinsert = "INSERT INTO dbGroup (userid, members) VALUES (?, ?)"
     msginsert = "INSERT INTO dbMessage (groupid, author, time, content) VALUES (?,?,?,?)"
 
+    def simpleCheck(self, file_content, lang):
+        logging.info("initial parse check lang: {}".format(lang))
+
+        parser = etree.HTMLParser(encoding='UTF-8')
+        root = etree.parse(StringIO(file_content), parser)
+
+        # process group
+        content = self.xpathContent(root)[0]
+
+        # start processing
+        thread = self.xpathThread(content)[0]
+        timetext = self.xpathTime(thread)[0]
+        timetext = timetext.strip().rsplit(" ", 1)[0]
+        msgtime = datetime.datetime.strptime(timetext, REdict[lang]["parseStr"])
+
     def parse(self, lang, userid):
         logging.info("user_id: {}, lang: {}".format(userid, lang))
 
+        # get upload data
         db = sqlite3.connect("user.db")
         c = db.cursor()
         c.execute("SELECT file FROM dbUser WHERE id == %d" % (userid))
         data = c.fetchone()
         s = data[0]
 
+        # prepare parser
         parser = etree.HTMLParser(encoding='UTF-8')
         root = etree.parse(StringIO(s), parser)
+        content = self.xpathContent(root)[0]
+        print(content.text)
+        threads = self.xpathThread(content)
 
         # process group
-        content = self.xpathContent(root)[0]
-
-        # start processing
-        threads = self.xpathThread(content)
+        grouplist = dict()
         groupnum = len(threads)
         processed = 0
-
-        grouplist = dict()
-
-        print("Process start")
-        starttime = time.time()
         idx = 0
         msgbuf = [None] * 512
+
+        # process group, user name
+        for thread in threads:
+            members = thread.text.strip()
+
+
+
+        # start processing message
+        print("Process start")
+        starttime = time.time()
 
         for thread in threads:
             members = thread.text.strip()
@@ -93,10 +115,11 @@ class ParseHandler():
         if idx != 0:
             c.executemany(self.msginsert, msgbuf[:idx])
 
-        # # update user info
+        # process end
         endtime = time.time()
         print("Process end, time consumed: {}".format(endtime-starttime))
 
+        # update user info
         c = db.cursor()
         c.execute("UPDATE dbUser SET isReady = 1 WHERE id == %d" % (userid))
         db.commit()

@@ -19,6 +19,7 @@ from bottle import redirect
 from bottle import response
 
 from config import REdict
+from worker import ParseHandler
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -38,14 +39,22 @@ def MessageUploadFormHandler():
 
     print("lang: {}, filename: {}".format(lang, filename))
 
-    # store database
+    # do simple check
+    handler = ParseHandler()
+    try:
+        handler.simpleCheck(file_content, lang)
+    except Exception as e:
+        print(e)
+        redirect('/view')
+
+    # simple check OK, store database
     db = sqlite3.connect("user.db")
     c = db.cursor()
     query = "INSERT INTO dbUser (file, isReady) VALUES (?, 0)"
     c.execute(query, [sqlite3.Binary(file_content)])
     userid = str(c.lastrowid)
-
     db.commit()
+    db.close()
 
     # invoke another process to processing
     popen = subprocess.Popen(['python2.7', 'worker.py', lang, userid])

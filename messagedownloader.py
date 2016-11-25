@@ -5,129 +5,113 @@ import os
 import logging
 import json
 import datetime
+import subprocess
 
-import webapp2
-from google.appengine.api import users
-from google.appengine.ext import blobstore
-from google.appengine.api import taskqueue
-from google.appengine.ext import ndb
-from google.appengine.ext.webapp import blobstore_handlers
-
+import sqlite3
 import jinja2
+from bottle import route
+from bottle import run
+from bottle import template
+from bottle import static_file
+from bottle import request
+from bottle import abort
+from bottle import redirect
+from bottle import response
 
-from dbmodel import dbUser, dbGroup, dbMessage
 from config import REdict
-
-JINJA_ENVIRONMENT = jinja2.Environment(
-        loader = jinja2.FileSystemLoader('template'),
-        extensions=['jinja2.ext.autoescape'],
-        autoescape=True)
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
-
-class MessageUploadFormHandler(blobstore_handlers.BlobstoreUploadHandler):
-    def post(self):
-        try:
-            upload = self.get_uploads()[0]
-            blob_key = upload.key()
-            user_id = users.get_current_user().user_id()
-            lang = self.request.params.get(u'lang') # have to use unicode for unknown reason
-
-            logging.info("blob_key: {}, user_id: {}, lang: {}".format(
-                blob_key, user_id, lang))
-            logging.info("{}".format(type(blob_key)))
-
-            user_message = dbUser(
-                user=user_id,
-                isReady=False,
-                blob_key=blob_key)
-            user_key = user_message.put()
-
-            task = taskqueue.add(
-                url='/parse',
-                params={
-                    'blob_key':blob_key,
-                    'user_key':user_key.urlsafe(),
-                    'lang'    :lang
-                }
-            )
-
-            self.redirect('/view')
-
-        except:
-            self.error(500)
+JINJA_ENVIRONMENT = jinja2.Environment(
+    loader = jinja2.FileSystemLoader('template'),
+    extensions=['jinja2.ext.autoescape'],
+    autoescape=True)
 
 
-class MessageUploadForm(webapp2.RequestHandler):
-    def get(self):
-        upload_url = blobstore.create_upload_url('/uploadhandler')
-        template = JINJA_ENVIRONMENT.get_template('upload.html')
-        template_values = {
-            'upload_url': upload_url,
-            'langs': REdict,
-        }
-        self.response.write(template.render(template_values))
+@route('/uploadhandler', method="POST")
+def MessageUploadFormHandler():
+    lang = request.forms.get(u'lang')
+    data = request.files.file
+    filename = data.filename
+    file_content = data.file.read()
 
-class MessageViewHandler(webapp2.RequestHandler):
-    def get(self):
-        template = JINJA_ENVIRONMENT.get_template('view.html')
-        self.response.write(template.render())
+    print("lang: {}, filename: {}".format(lang, filename))
 
+    # store database
+    db = sqlite3.connect("user.db")
+    c = db.cursor()
+    query = "INSERT INTO dbUser (file, isReady) VALUES (?, 0)"
+    c.execute(query, [sqlite3.Binary(file_content)])
+    userid = str(c.lastrowid)
 
-class MessageFetchHandler(webapp2.RequestHandler):
-    def get(self):
-        reqType = self.request.get("type")
-        print("API request type: {}".format(reqType))
-        user_id = users.get_current_user().user_id()
-        userdata = dbUser.query(dbUser.user == user_id).fetch()
+    db.commit()
 
-        self.response.headers['Content-Type'] = "application/json"
+    # invoke another process to processing
+    popen = subprocess.Popen(['python2.7', 'worker.py', lang, userid])
 
-        if reqType == "user":
-            if not userdata or not userdata[0].isReady:
-                self.response.out.write(json.dumps({"user": []}))
-            else:
-                self.response.out.write(json.dumps({"user": userdata[0].user}))
-        elif reqType == "groups":
-            dbGroupList = dbGroup.query(dbGroup.user_key == userdata[0].key).fetch()
-            groups = [i.group for i in dbGroupList]
-            print("Get {} groups".format(len(groups)))
-            self.response.out.write(json.dumps({"groups": groups}))
+    redirect('/view')
 
-        elif reqType == "message":
-            groupname = self.request.get("group")
-            startstr = self.request.get("startdate")
-            startdate = datetime.datetime.strptime(startstr or "20010101", "%Y%m%d")
-            endstr = self.request.get("enddate")
-            if endstr:
-                enddate = datetime.datetime.strptime(endstr, "%Y%m%d")
-            else:
-                enddate = datetime.datetime.today()
+@route('/upload')
+def MessageUploadForm():
+    template = JINJA_ENVIRONMENT.get_template('upload.html')
+    template_values = {
+        'upload_url': '/uploadhandler',
+        'langs': REdict,
+    }
+    return template.render(template_values)
 
-            group = dbGroup.query(dbGroup.group == groupname).fetch()[0]
+@route('/')
+@route('/view')
+def MessageViewHandler():
+    template = JINJA_ENVIRONMENT.get_template('view.html')
+    return template.render()
 
-            msgQuery = dbMessage.query(
-                ndb.AND(dbMessage.group_key == group.key,
-                    dbMessage.time > startdate,
-                    dbMessage.time < enddate)).order(dbMessage.time).fetch()
-
-            ret = [{"author": msg.author,
-                "time": msg.time.strftime("%Y-%m-%d %H:%M"),
-                "content": msg.content} for msg in msgQuery]
-
-            self.response.out.write(json.dumps({"messages": ret}))
+@route('/static/<path:path>')
+def callback(path):
+    return static_file(path, root='static')
 
 
-class RedirectHandler(webapp2.RequestHandler):
-    def get(self):
-        self.redirect('/view')
+@route('/fetch')
+def MessageFetchHandler():
+    reqType = request.query.type
+    print("API request type: {}".format(reqType))
+    userid = 1
+    db = sqlite3.connect("user.db")
+    c = db.cursor()
 
-app = webapp2.WSGIApplication([
-    ('/view', MessageViewHandler),
-    ('/fetch', MessageFetchHandler),
-    ('/upload', MessageUploadForm),
-    ('/uploadhandler', MessageUploadFormHandler),
-    ('/.*', RedirectHandler),
-], debug=True)
+    response.content_type = "application/json"
+
+    if reqType == "user":
+        pass
+    elif reqType == "groups":
+        c.execute('SELECT members FROM dbGroup WHERE userid=?', (userid,))
+        groups = [i[0] for i in c.fetchall()]
+        print("Get {} groups".format(len(groups)))
+        return json.dumps({"groups": groups})
+
+    elif reqType == "message":
+        groupname = request.query.group
+        startstr = request.query.startdate
+        startdate = datetime.datetime.strptime(startstr or "20010101", "%Y%m%d")
+        endstr = request.query.enddate
+        if endstr:
+            enddate = datetime.datetime.strptime(endstr, "%Y%m%d")
+        else:
+            enddate = datetime.datetime.today()
+
+        c.execute("SELECT rowid FROM dbGroup WHERE members=?", (groupname,))
+        groupid = c.fetchone()[0]
+
+        c.execute("SELECT * FROM dbMessage " \
+            "WHERE groupid=? AND time >= ? AND time < ?" \
+            "ORDER BY time", (groupid, startdate, enddate, ))
+        msgQuery = c.fetchmany(300)
+
+        ret = [{"author": msg[1],
+            "time": msg[2],
+            "content": msg[3]} for msg in msgQuery]
+
+        return json.dumps({"messages": ret})
+
+run(host='localhost', port=8080, reloader=True)

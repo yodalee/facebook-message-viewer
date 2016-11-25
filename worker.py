@@ -1,100 +1,115 @@
 # -*- coding: utf-8 -*-
-from google.appengine.ext import ndb
-from google.appengine.ext.webapp import blobstore_handlers
-from google.appengine.ext import blobstore
-import webapp2
-
 import time
 import logging
 from lxml import etree
 import sys
 import datetime
+import sqlite3
+from StringIO import StringIO
 
-from dbmodel import dbUser, dbGroup, dbMessage
 from config import REdict
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
 
-class ParseHandler(blobstore_handlers.BlobstoreDownloadHandler):
-    xpathContent = "//div[@class='contents']"
-    xpathThread = ".//div[@class='thread']"
-    xpathMessage = ".//div[@class='message']"
-    xpathAuthor = ".//span[@class='user']//text()"
-    xpathTime = ".//span[@class='meta']//text()"
+class ParseHandler():
+    xpathContent = etree.XPath("//div[@class='contents']")
+    xpathThread  = etree.XPath(".//div[@class='thread']")
+    xpathMessage = etree.XPath(".//div[@class='message']")
+    xpathAuthor  = etree.XPath(".//span[@class='user']//text()")
+    xpathTime    = etree.XPath(".//span[@class='meta']//text()")
+    xpathText    = etree.XPath(".//p")
 
-    @ndb.toplevel
-    def post(self):
-        blob_key = self.request.get('blob_key')
-        url_str = self.request.get('user_key')
-        lang = self.request.get('lang')
-        logging.info("blob_key: {}, user_key: {}, lang: {}".format(
-            blob_key, url_str, lang))
+    grpinsert = "INSERT INTO dbGroup (userid, members) VALUES (?, ?)"
+    msginsert = "INSERT INTO dbMessage (groupid, author, time, content) VALUES (?,?,?,?)"
 
-        user_key = ndb.Key(urlsafe=url_str)
-        # fetch the blob
+    def parse(self, lang, userid):
+        logging.info("user_id: {}, lang: {}".format(userid, lang))
 
-        blob_reader = blobstore.BlobReader(blob_key)
+        db = sqlite3.connect("user.db")
+        c = db.cursor()
+        c.execute("SELECT file FROM dbUser WHERE id == %d" % (userid))
+        data = c.fetchone()
+        s = data[0]
+
         parser = etree.HTMLParser(encoding='UTF-8')
-        root = etree.parse(blob_reader, parser)
+        root = etree.parse(StringIO(s), parser)
 
         # process group
-        content = root.xpath(self.xpathContent)[0]
+        content = self.xpathContent(root)[0]
 
         # start processing
-        threads = content.xpath(self.xpathThread)
+        threads = self.xpathThread(content)
+        groupnum = len(threads)
         processed = 0
-        msgbuf = [None] * 512
+
+        grouplist = dict()
 
         print("Process start")
         starttime = time.time()
+        idx = 0
+        msgbuf = [None] * 512
 
         for thread in threads:
             members = thread.text.strip()
-            print("Process: {}, progress {}/{}".format(members, processed, len(threads)))
-            group = dbGroup(
-                user_key = user_key,
-                group = members)
 
-            group_key = group.put()
+            if members in grouplist:
+                groupid = grouplist[members]
+            else:
+                c.execute(self.grpinsert, (userid, members))
+                groupid = c.lastrowid
+                grouplist[members] = groupid
+                db.commit()
 
-            messages = thread.xpath(self.xpathMessage)
-            remain = len(messages) & 0x1ff
-            for i,meta in enumerate(messages):
-                author = meta.xpath(self.xpathAuthor)[0].strip()
-                timetext = meta.xpath(self.xpathTime)[0].strip()
+            print("Process id {}: {}, progress {}/{}".format(
+                groupid, members, processed, groupnum))
+
+            authorlist = self.xpathAuthor(thread)
+            timelist = self.xpathTime(thread)
+            textlist = self.xpathText(thread)
+
+            for author, timetext, text in zip(authorlist, timelist, textlist):
+                author = author.strip()
+
                 # cut down last string "UTC+08"
                 # which cause dateparser failed to parse
-                timetext = timetext.rsplit(" ", 1)[0]
+                timetext = timetext.strip().rsplit(" ", 1)[0]
                 msgtime = datetime.datetime.strptime(
                         timetext, REdict[lang]["parseStr"])
-                text = meta.getnext().text.strip()
 
-                msgbuf[i&0x1ff] = dbMessage(
-                    group_key = group_key,
-                    author = author,
-                    time = msgtime,
-                    content = text)
+                text = text.text or ""
 
-                if i == 511:
-                    ndb.put_multi_async(msgbuf)
+                msgbuf[idx] = (groupid, author, msgtime, text)
 
-            if remain != 0:
-                ndb.put_multi_async(msgbuf[:remain])
+                idx = idx + 1
+                if idx == 512:
+                    idx = 0
+                    c.executemany(self.msginsert, msgbuf)
+                    db.commit()
 
             processed = processed + 1
 
-        # update user info
+        if idx != 0:
+            c.executemany(self.msginsert, msgbuf[:idx])
+
+        # # update user info
         endtime = time.time()
         print("Process end, time consumed: {}".format(endtime-starttime))
 
-        userdata = user_key.get()
-        userdata.isReady = True
-        userdata.put()
+        c = db.cursor()
+        c.execute("UPDATE dbUser SET isReady = 1 WHERE id == %d" % (userid))
+        db.commit()
 
+        db.close()
 
-app = webapp2.WSGIApplication([
-    ('/parse', ParseHandler)
-    ], debug=True)
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        exit()
+
+    lang = sys.argv[1]
+    userid = int(sys.argv[2])
+
+    handler = ParseHandler()
+    handler.parse(lang, userid)
 

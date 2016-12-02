@@ -9,6 +9,7 @@ import subprocess
 
 import sqlite3
 import jinja2
+from bottle import Bottle
 from bottle import route
 from bottle import run
 from bottle import template
@@ -30,7 +31,6 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 
-@route('/uploadhandler', method="POST")
 def MessageUploadFormHandler():
     lang = request.forms.get(u'lang')
     data = request.files.file
@@ -61,7 +61,6 @@ def MessageUploadFormHandler():
 
     redirect('/view')
 
-@route('/upload')
 def MessageUploadForm():
     template = JINJA_ENVIRONMENT.get_template('upload.html')
     template_values = {
@@ -70,18 +69,13 @@ def MessageUploadForm():
     }
     return template.render(template_values)
 
-@route('/')
-@route('/view')
 def MessageViewHandler():
     template = JINJA_ENVIRONMENT.get_template('view.html')
     return template.render()
 
-@route('/static/<path:path>')
 def callback(path):
     return static_file(path, root='static')
 
-
-@route('/fetch')
 def MessageFetchHandler():
     reqType = request.query.type
     print("API request type: {}".format(reqType))
@@ -123,4 +117,14 @@ def MessageFetchHandler():
 
         return json.dumps({"messages": ret})
 
-run(host='localhost', port=8080, reloader=True)
+def setup_routing(app):
+    app.route('/', 'GET', MessageViewHandler)
+    app.route('/view', 'GET', MessageViewHandler)
+    app.route('/uploadhandler', 'POST', MessageUploadFormHandler)
+    app.route('/upload', 'GET', MessageUploadForm)
+    app.route('/static/<path:path>', 'GET', callback)
+    app.route('/fetch', 'GET', MessageFetchHandler)
+
+app = Bottle()
+setup_routing(app)
+run(app=app, host='localhost', port=8080, reloader=True)

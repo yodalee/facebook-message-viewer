@@ -21,6 +21,7 @@ from bottle import response
 
 from config import REdict
 from worker import ParseHandler
+from db import createdb
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -127,4 +128,5 @@ def setup_routing(app):
 
 app = Bottle()
 setup_routing(app)
+createdb()
 run(app=app, host='localhost', port=8080, reloader=True)

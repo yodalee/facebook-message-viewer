@@ -8,10 +8,12 @@ import sqlite3
 from StringIO import StringIO
 
 from config import REdict
+from db import dbManager
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
+database = dbManager()
 
 class ParseHandler():
     xpathContent = etree.XPath("//div[@class='contents']")
@@ -20,9 +22,6 @@ class ParseHandler():
     xpathAuthor  = etree.XPath(".//span[@class='user']//text()")
     xpathTime    = etree.XPath(".//span[@class='meta']//text()")
     xpathText    = etree.XPath(".//p")
-
-    grpinsert = "INSERT INTO dbGroup (userid, members) VALUES (?, ?)"
-    msginsert = "INSERT INTO dbMessage (groupid, author, time, content) VALUES (?,?,?,?)"
 
     def simpleCheck(self, file_content, lang):
         logging.info("initial parse check lang: {}".format(lang))
@@ -42,18 +41,12 @@ class ParseHandler():
     def parse(self, lang, userid):
         logging.info("user_id: {}, lang: {}".format(userid, lang))
 
-        # get upload data
-        db = sqlite3.connect("user.db")
-        c = db.cursor()
-        c.execute("SELECT file FROM dbUser WHERE id == %d" % (userid))
-        data = c.fetchone()
-        s = data[0]
+        s = database.getUpload(userid)
 
         # prepare parser
         parser = etree.HTMLParser(encoding='UTF-8')
         root = etree.parse(StringIO(s), parser)
         content = self.xpathContent(root)[0]
-        print(content.text)
         threads = self.xpathThread(content)
 
         # process group
@@ -79,10 +72,8 @@ class ParseHandler():
             if members in grouplist:
                 groupid = grouplist[members]
             else:
-                c.execute(self.grpinsert, (userid, members))
-                groupid = c.lastrowid
+                groupid = database.insertGroup(userid, members)
                 grouplist[members] = groupid
-                db.commit()
 
             print("Process id {}: {}, progress {}/{}".format(
                 groupid, members, processed, groupnum))
@@ -100,31 +91,26 @@ class ParseHandler():
                 msgtime = datetime.datetime.strptime(
                         timetext, REdict[lang]["parseStr"])
 
-                text = text.text or ""
+                text = (text.text or "").strip()
 
                 msgbuf[idx] = (groupid, author, msgtime, text)
 
                 idx = idx + 1
                 if idx == 512:
                     idx = 0
-                    c.executemany(self.msginsert, msgbuf)
-                    db.commit()
+                    database.insertMessage(msgbuf)
 
             processed = processed + 1
 
         if idx != 0:
-            c.executemany(self.msginsert, msgbuf[:idx])
+            database.insertMessage(msgbuf[:idx])
 
         # process end
         endtime = time.time()
         print("Process end, time consumed: {}".format(endtime-starttime))
 
         # update user info
-        c = db.cursor()
-        c.execute("UPDATE dbUser SET isReady = 1 WHERE id == %d" % (userid))
-        db.commit()
-
-        db.close()
+        database.updateUser(userid)
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:

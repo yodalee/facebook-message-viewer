@@ -8,12 +8,12 @@ import sqlite3
 from StringIO import StringIO
 
 from config import REdict
-from db import dbManager
+from dbSqlite3 import dbSqlite3
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
-database = dbManager()
+database = dbSqlite3()
 
 class ParseHandler():
     xpathContent = etree.XPath("//div[@class='contents']")

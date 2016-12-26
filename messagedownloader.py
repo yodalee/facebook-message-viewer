@@ -4,10 +4,8 @@ import sys
 import os
 import logging
 import json
-import datetime
 import subprocess
 
-import sqlite3
 import jinja2
 from bottle import Bottle
 from bottle import route
@@ -21,7 +19,7 @@ from bottle import response
 
 from config import REdict
 from worker import ParseHandler
-from db import dbManager
+from dbSqlite3 import dbSqlite3
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -31,7 +29,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-database = dbManager()
+database = dbSqlite3()
 
 def MessageUploadFormHandler():
     lang = request.forms.get(u'lang')

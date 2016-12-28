@@ -1,6 +1,6 @@
 <html>
   <body>
-    <form action="{{ upload_url }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ upload_url }}" method="POST" enctype="multipart/form-data" onsubmit="return checkSubmit(this)">
       Upload Message.htm: <input type="file" name="file"><br>
       Choose Your Language:
       <select name="lang" id="lang" onchange="checklang()">
@@ -15,6 +15,10 @@
       function checklang() {
         var value = document.getElementById("lang").value
         document.getElementById("submit").disabled = (value == "")
+      }
+      function checkSubmit(form) {
+        form.submit.disabled = true;
+        return true;
       }
     </script>
   </body>

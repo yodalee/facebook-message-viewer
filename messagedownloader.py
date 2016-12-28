@@ -21,9 +21,6 @@ from config import REdict
 from worker import ParseHandler
 from dbSqlite3 import dbSqlite3
 
-reload(sys)
-sys.setdefaultencoding("utf-8")
-
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader = jinja2.FileSystemLoader('template'),
     extensions=['jinja2.ext.autoescape'],
@@ -32,8 +29,8 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 database = dbSqlite3()
 
 def MessageUploadFormHandler():
-    lang = request.forms.get(u'lang')
-    data = request.files.file
+    lang = request.forms.get('lang')
+    data = request.files.get('file')
     filename = data.filename
     file_content = data.file.read()
 
@@ -51,7 +48,7 @@ def MessageUploadFormHandler():
     userid = database.insertUser(file_content)
 
     # invoke another process to processing
-    popen = subprocess.Popen(['python2.7', 'worker.py', lang, userid])
+    popen = subprocess.Popen(['python', 'worker.py', lang, userid])
 
     redirect('/view')
 

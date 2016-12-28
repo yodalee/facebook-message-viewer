@@ -38,7 +38,7 @@ def testParseGen(k, v):
     return test
 
 if __name__ == "__main__":
-    for k,v in REdict.iteritems():
+    for k,v in REdict.items():
         test_func = testParseGen(k, v)
         setattr(REdictParseTest, "test_%s" % (k), test_func)
     unittest.main()

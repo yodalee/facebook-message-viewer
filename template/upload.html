@@ -5,7 +5,7 @@
       Choose Your Language:
       <select name="lang" id="lang" onchange="checklang()">
         <option value="">----</option>
-        {% for key,value in langs.iteritems() %}
+        {% for key,value in langs.items() %}
           <option value="{{ key }}">{{ value['showName'] }}</option>
         {% endfor %}
       </select></br>

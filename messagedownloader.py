@@ -4,10 +4,8 @@ import sys
 import os
 import logging
 import json
-import datetime
 import subprocess
 
-import sqlite3
 import jinja2
 from bottle import Bottle
 from bottle import route
@@ -21,6 +19,7 @@ from bottle import response
 
 from config import REdict
 from worker import ParseHandler
+from dbSqlite3 import dbSqlite3
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -30,6 +29,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
+database = dbSqlite3()
 
 def MessageUploadFormHandler():
     lang = request.forms.get(u'lang')
@@ -48,13 +48,7 @@ def MessageUploadFormHandler():
         redirect('/view')
 
     # simple check OK, store database
-    db = sqlite3.connect("user.db")
-    c = db.cursor()
-    query = "INSERT INTO dbUser (file, isReady) VALUES (?, 0)"
-    c.execute(query, [sqlite3.Binary(file_content)])
-    userid = str(c.lastrowid)
-    db.commit()
-    db.close()
+    userid = database.insertUser(file_content)
 
     # invoke another process to processing
     popen = subprocess.Popen(['python2.7', 'worker.py', lang, userid])
@@ -80,40 +74,26 @@ def MessageFetchHandler():
     reqType = request.query.type
     print("API request type: {}".format(reqType))
     userid = 1
-    db = sqlite3.connect("user.db")
-    c = db.cursor()
 
     response.content_type = "application/json"
 
     if reqType == "user":
         pass
     elif reqType == "groups":
-        c.execute('SELECT members FROM dbGroup WHERE userid=?', (userid,))
-        groups = [i[0] for i in c.fetchall()]
+        groups = database.getGroup(userid)
         print("Get {} groups".format(len(groups)))
         return json.dumps({"groups": groups})
 
     elif reqType == "message":
         groupname = request.query.group
         startstr = request.query.startdate
-        startdate = datetime.datetime.strptime(startstr or "20010101", "%Y%m%d")
         endstr = request.query.enddate
-        if endstr:
-            enddate = datetime.datetime.strptime(endstr, "%Y%m%d")
-        else:
-            enddate = datetime.datetime.today()
+        messages = database.getUser(groupname, startstr, endstr)
 
-        c.execute("SELECT rowid FROM dbGroup WHERE members=?", (groupname,))
-        groupid = c.fetchone()[0]
-
-        c.execute("SELECT * FROM dbMessage " \
-            "WHERE groupid=? AND time >= ? AND time < ?" \
-            "ORDER BY time", (groupid, startdate, enddate, ))
-        msgQuery = c.fetchmany(300)
 
         ret = [{"author": msg[1],
             "time": msg[2],
-            "content": msg[3]} for msg in msgQuery]
+            "content": msg[3]} for msg in messages]
 
         return json.dumps({"messages": ret})
 

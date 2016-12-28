@@ -1,2 +1,6 @@
 *.pyc
 *.swp
+*.db
+# Vue.js generated file
+/template/view.html
+/static

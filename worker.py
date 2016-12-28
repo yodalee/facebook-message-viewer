@@ -2,9 +2,7 @@
 import time
 import logging
 from lxml import etree
-import sys
 import datetime
-import sqlite3
 from io import BytesIO
 
 from config import REdict
@@ -108,14 +106,3 @@ class ParseHandler():
 
         # update user info
         database.updateUser(userid)
-
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        exit()
-
-    lang = sys.argv[1]
-    userid = int(sys.argv[2])
-
-    handler = ParseHandler()
-    handler.parse(lang, userid)
-

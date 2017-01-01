@@ -2,16 +2,11 @@
 import time
 import logging
 from lxml import etree
-import sys
 import datetime
-import sqlite3
-from StringIO import StringIO
+from io import BytesIO
 
 from config import REdict
 from dbSqlite3 import dbSqlite3
-
-reload(sys)
-sys.setdefaultencoding("utf-8")
 
 database = dbSqlite3()
 
@@ -27,7 +22,7 @@ class ParseHandler():
         logging.info("initial parse check lang: {}".format(lang))
 
         parser = etree.HTMLParser(encoding='UTF-8')
-        root = etree.parse(StringIO(file_content), parser)
+        root = etree.parse(BytesIO(file_content), parser)
 
         # process group
         content = self.xpathContent(root)[0]
@@ -45,7 +40,7 @@ class ParseHandler():
 
         # prepare parser
         parser = etree.HTMLParser(encoding='UTF-8')
-        root = etree.parse(StringIO(s), parser)
+        root = etree.parse(BytesIO(s), parser)
         content = self.xpathContent(root)[0]
         threads = self.xpathThread(content)
 
@@ -111,14 +106,3 @@ class ParseHandler():
 
         # update user info
         database.updateUser(userid)
-
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        exit()
-
-    lang = sys.argv[1]
-    userid = int(sys.argv[2])
-
-    handler = ParseHandler()
-    handler.parse(lang, userid)
-

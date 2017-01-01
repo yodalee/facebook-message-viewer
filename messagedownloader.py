@@ -1,10 +1,7 @@
 #-*- coding: UTF-8 -*-
 #/usr/bin/env python
-import sys
-import os
-import logging
 import json
-import subprocess
+from multiprocessing import Process
 
 import jinja2
 from bottle import Bottle
@@ -21,28 +18,25 @@ from config import REdict
 from worker import ParseHandler
 from dbSqlite3 import dbSqlite3
 
-reload(sys)
-sys.setdefaultencoding("utf-8")
-
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader = jinja2.FileSystemLoader('template'),
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
 database = dbSqlite3()
+parser = ParseHandler()
 
 def MessageUploadFormHandler():
-    lang = request.forms.get(u'lang')
-    data = request.files.file
+    lang = request.forms.get('lang')
+    data = request.files.get('file')
     filename = data.filename
     file_content = data.file.read()
 
     print("lang: {}, filename: {}".format(lang, filename))
 
     # do simple check
-    handler = ParseHandler()
     try:
-        handler.simpleCheck(file_content, lang)
+        parser.simpleCheck(file_content, lang)
     except Exception as e:
         print(e)
         redirect('/view')
@@ -51,7 +45,8 @@ def MessageUploadFormHandler():
     userid = database.insertUser(file_content)
 
     # invoke another process to processing
-    popen = subprocess.Popen(['python2.7', 'worker.py', lang, userid])
+    p = Process(target = parser.parse, args=(lang, int(userid)))
+    p.start()
 
     redirect('/view')
 

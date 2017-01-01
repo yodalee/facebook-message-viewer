@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import time
 import logging
-from lxml import etree
 import datetime
+from lxml import etree
 from io import BytesIO
 
 from config import REdict
@@ -12,6 +12,7 @@ database = dbSqlite3()
 
 class ParseHandler():
     xpathContent = etree.XPath("//div[@class='contents']")
+    xpathUser    = etree.XPath(".//h1//text()")
     xpathThread  = etree.XPath(".//div[@class='thread']")
     xpathMessage = etree.XPath(".//div[@class='message']")
     xpathAuthor  = etree.XPath(".//span[@class='user']//text()")
@@ -32,6 +33,17 @@ class ParseHandler():
         timetext = self.xpathTime(thread)[0]
         timetext = timetext.strip().rsplit(" ", 1)[0]
         msgtime = datetime.datetime.strptime(timetext, REdict[lang]["parseStr"])
+
+    def parseUsername(self, file_content):
+        parser = etree.HTMLParser(encoding='UTF-8')
+        root = etree.parse(BytesIO(file_content), parser)
+
+        content = self.xpathContent(root)[0]
+        username = self.xpathUser(content)[0].strip()
+
+        logging.info("Parse username: {}".format(username))
+
+        return username
 
     def parse(self, lang, userid):
         logging.info("user_id: {}, lang: {}".format(userid, lang))

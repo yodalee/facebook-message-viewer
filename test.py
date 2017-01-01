@@ -5,6 +5,17 @@ import unittest
 import datetime
 
 from config import REdict, REdictTest
+from worker import ParseHandler
+
+class ParseHanderTest(unittest.TestCase):
+    def setUp(self):
+        with open("testcase/test-en.htm", "rb") as f:
+            self.parser = ParseHandler()
+            self.content = f.read()
+
+    def test_parseUsername(self):
+        username = self.parser.parseUsername(self.content)
+        self.assertEqual(username, "葉闆")
 
 class REdictParseTest(unittest.TestCase):
     pass

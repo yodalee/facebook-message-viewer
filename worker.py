@@ -61,8 +61,13 @@ class ParseHandler():
         threads = self.xpathThread(content)
 
         # process group
+        existGroup = database.getGroup(userid)
         grouplist = dict()
+        for (groupid, members) in existGroup:
+            grouplist[members] = groupid
         groupnum = len(threads)
+
+        # variable
         processed = 0
         idx = 0
         msgbuf = [None] * 512
@@ -70,8 +75,6 @@ class ParseHandler():
         # process group, user name
         for thread in threads:
             members = thread.text.strip()
-
-
 
         # start processing message
         print("Process start")

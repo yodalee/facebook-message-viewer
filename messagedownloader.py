@@ -34,9 +34,10 @@ def MessageUploadFormHandler():
 
     print("lang: {}, filename: {}".format(lang, filename))
 
+    parser.setLang(lang)
     # do simple check
     try:
-        parser.simpleCheck(file_content, lang)
+        parser.simpleCheck(file_content)
     except Exception as e:
         print(e)
         redirect('/view')
@@ -45,7 +46,7 @@ def MessageUploadFormHandler():
     userid = database.insertUser(file_content)
 
     # invoke another process to processing
-    p = Process(target = parser.parse, args=(lang, int(userid)))
+    p = Process(target = parser.parse, args=(int(userid),))
     p.start()
 
     redirect('/view')

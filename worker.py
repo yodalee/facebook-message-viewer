@@ -11,16 +11,21 @@ from dbSqlite3 import dbSqlite3
 database = dbSqlite3()
 
 class ParseHandler():
-    xpathContent = etree.XPath("//div[@class='contents']")
-    xpathUser    = etree.XPath(".//h1//text()")
-    xpathThread  = etree.XPath(".//div[@class='thread']")
-    xpathMessage = etree.XPath(".//div[@class='message']")
-    xpathAuthor  = etree.XPath(".//span[@class='user']//text()")
-    xpathTime    = etree.XPath(".//span[@class='meta']//text()")
-    xpathText    = etree.XPath(".//p")
+    def __init__(self):
+        self.xpathContent = etree.XPath("//div[@class='contents']")
+        self.xpathUser    = etree.XPath(".//h1//text()")
+        self.xpathThread  = etree.XPath(".//div[@class='thread']")
+        self.xpathMessage = etree.XPath(".//div[@class='message']")
+        self.xpathAuthor  = etree.XPath(".//span[@class='user']//text()")
+        self.xpathTime    = etree.XPath(".//span[@class='meta']//text()")
+        self.xpathText    = etree.XPath(".//p")
+        self.lang = None
 
-    def simpleCheck(self, file_content, lang):
-        logging.info("initial parse check lang: {}".format(lang))
+    def setLang(self, lang):
+        self.lang = REdict[lang]
+
+    def simpleCheck(self, file_content):
+        logging.info("initial parse check: {}".format(self.lang["showName"]))
 
         parser = etree.HTMLParser(encoding='UTF-8')
         root = etree.parse(BytesIO(file_content), parser)
@@ -32,12 +37,11 @@ class ParseHandler():
         thread = self.xpathThread(content)[0]
         timetext = self.xpathTime(thread)[0]
         timetext = timetext.strip().rsplit(" ", 1)[0]
-        msgtime = datetime.datetime.strptime(timetext, REdict[lang]["parseStr"])
+        msgtime = datetime.datetime.strptime(timetext, self.lang["parseStr"])
 
     def parseUsername(self, file_content):
         parser = etree.HTMLParser(encoding='UTF-8')
         root = etree.parse(BytesIO(file_content), parser)
-
         content = self.xpathContent(root)[0]
         username = self.xpathUser(content)[0].strip()
 
@@ -45,8 +49,8 @@ class ParseHandler():
 
         return username
 
-    def parse(self, lang, userid):
-        logging.info("user_id: {}, lang: {}".format(userid, lang))
+    def parse(self, userid):
+        logging.info("user_id: {}, lang: {}".format(userid, self.lang["showName"]))
 
         s = database.getUpload(userid)
 
@@ -96,7 +100,7 @@ class ParseHandler():
                 # which cause dateparser failed to parse
                 timetext = timetext.strip().rsplit(" ", 1)[0]
                 msgtime = datetime.datetime.strptime(
-                        timetext, REdict[lang]["parseStr"])
+                        timetext, self.lang["parseStr"])
 
                 text = (text.text or "").strip()
 

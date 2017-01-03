@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import time
 import logging
-import datetime
+from datetime import datetime
 from lxml import etree
 from io import BytesIO
 
@@ -37,7 +37,7 @@ class ParseHandler():
         thread = self.xpathThread(content)[0]
         timetext = self.xpathTime(thread)[0]
         timetext = timetext.strip().rsplit(" ", 1)[0]
-        msgtime = datetime.datetime.strptime(timetext, self.lang["parseStr"])
+        msgtime = datetime.strptime(timetext, self.lang["parseStr"])
 
     def parseUsername(self, file_content):
         parser = etree.HTMLParser(encoding='UTF-8')
@@ -71,6 +71,8 @@ class ParseHandler():
         processed = 0
         idx = 0
         msgbuf = [None] * 512
+        subtime = 0
+        prevtime = datetime(2001, 1, 1)
 
         # process group, user name
         for thread in threads:
@@ -102,12 +104,15 @@ class ParseHandler():
                 # cut down last string "UTC+08"
                 # which cause dateparser failed to parse
                 timetext = timetext.strip().rsplit(" ", 1)[0]
-                msgtime = datetime.datetime.strptime(
-                        timetext, self.lang["parseStr"])
-
+                msgtime = datetime.strptime(timetext, self.lang["parseStr"])
+                if msgtime == prevtime:
+                    subtime = subtime + 1
+                else:
+                    prevtime = msgtime
+                    subtime = 0
                 text = (text.text or "").strip()
 
-                msgbuf[idx] = (groupid, author, msgtime, text)
+                msgbuf[idx] = (groupid, author, msgtime, subtime, text)
 
                 idx = idx + 1
                 if idx == 512:

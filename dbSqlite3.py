@@ -30,6 +30,7 @@ class dbSqlite3(db.db):
             "id INTEGER PRIMARY KEY," \
             "author TEXT," \
             "time TIMESTAMP," \
+            "subtime INTEGER," \
             "content TEXT," \
             "UNIQUE (groupid, author, time, content))")
 
@@ -87,7 +88,8 @@ class dbSqlite3(db.db):
         :msgbuf: array of tuple that contain: (groupid, author, msgtime, text)
         """
         self.cursor.executemany("INSERT OR IGNORE INTO dbMessage " \
-                "(groupid, author, time, content) VALUES (?,?,?,?)",
+                "(groupid, author, time, subtime, content) " \
+                "VALUES (?,?,?,?,?)",
                 msgbuf)
 
     def getMessage(self, groupname, startstr, endstr):
@@ -104,6 +106,7 @@ class dbSqlite3(db.db):
         self.cursor.execute("SELECT id, author, time, content " \
             "FROM dbMessage " \
             "WHERE groupid=? AND time >= ? AND time < ?" \
-            "ORDER BY time", (groupid, startdate, enddate, ))
+            "ORDER BY time, subtime DESC",
+            (groupid, startdate, enddate, ))
 
         return self.cursor.fetchmany(30)

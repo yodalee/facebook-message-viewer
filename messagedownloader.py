@@ -44,8 +44,7 @@ def MessageUploadFormHandler():
 
     # simple check OK, parse username store database
     username = parser.parseUsername(file_content)
-    userid = database.getUserByName(username) or \
-        database.insertUser(username, file_content)
+    userid = database.insertUser(username, file_content)
 
     # invoke another process to processing
     p = Process(target = parser.parse, args=(int(userid),))

@@ -37,14 +37,17 @@ class dbSqlite3(db.db):
         return db
 
     def insertUser(self, username, content):
-        """create entry of user
+        """update content or create entry for user
 
         :content: raw content uploaded by user
         :return: userid of the inserted id
 
         """
-        query = "INSERT INTO dbUser (file, username, isReady) " \
-                "VALUES (?, ?, 0)"
+        query = "INSERT OR REPLACE INTO dbUser " \
+                "(id, file, username, isReady) " \
+                "VALUES (" \
+                "(SELECT id FROM dbUser WHERE username = '%s'), " \
+                "?, ?, 0)" % (username)
         self.cursor.execute(query, (sqlite3.Binary(content), username))
         userid = str(self.cursor.lastrowid)
         self.db.commit()
@@ -57,13 +60,6 @@ class dbSqlite3(db.db):
                 "WHERE id == %d" % (userid))
         data = self.cursor.fetchone()
         return data[0]
-
-    def getUserByName(self, username):
-        # get userid by name
-        self.cursor.execute("SELECT id FROM dbUser " \
-                "WHERE username == '%s'" % (username))
-        data = self.cursor.fetchone()
-        return data[0] if data else data
 
     def updateUser(self, userid):
         self.cursor.execute("UPDATE dbUser SET isReady = 1 " \

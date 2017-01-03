@@ -20,9 +20,6 @@ class db():
     def getUpload(self, userid):
         raise NotImplementedError
 
-    def getUserByName(self, username):
-        raise NotImplementedError
-
     def updateUser(self, userid):
         raise NotImplementedError
 

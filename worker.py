@@ -49,6 +49,23 @@ class ParseHandler():
 
         return username
 
+    def parseGroup(self, threads, userid):
+        """parseGroup: parse through all group and build a table
+           to all username in this message file
+        """
+        # build dictionary
+        friendset = set()
+        idx = 0
+        for thread in threads:
+            friendset |= set(map(lambda x: x.strip(), thread.text.split(',')))
+
+        logging.info("Parse all friend, got {} unique friend name".format(
+            len(friendset)))
+
+        # store friendlist
+        for name in friendset:
+            database.insertFriend(userid, name)
+
     def parse(self, userid):
         logging.info("user_id: {}, lang: {}".format(userid, self.lang["showName"]))
 
@@ -60,7 +77,15 @@ class ParseHandler():
         content = self.xpathContent(root)[0]
         threads = self.xpathThread(content)
 
-        # process group
+        username = self.xpathUser(content)[0].strip()
+
+        # start processing
+        starttime = time.time()
+
+        # built friend table
+        self.parseGroup(threads, userid)
+
+        # prepare group
         existGroup = database.getGroup(userid)
         grouplist = dict()
         for (groupid, members) in existGroup:
@@ -74,12 +99,7 @@ class ParseHandler():
         subtime = 0
         prevtime = datetime(2001, 1, 1)
 
-        # process group, user name
-        for thread in threads:
-            members = thread.text.strip()
-
-        # start processing message
-        print("Process start")
+        print("Process message start")
         starttime = time.time()
 
         for thread in threads:

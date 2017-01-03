@@ -14,17 +14,27 @@ class dbSqlite3(db.db):
     def createdb(self):
         db = sqlite3.connect("user.db")
 
+        # dbUser: table about user, uploaded blob, username
         db.execute("CREATE TABLE IF NOT EXISTS dbUser (" \
             "id INTEGER PRIMARY KEY," \
             "file BLOB," \
             "username TEXT," \
             "isReady INTEGER)")
 
+        # dbFriend table to friend list, deal with id@facebook.com
+        db.execute("CREATE TABLE IF NOT EXISTS dbFriend (" \
+            "userid INTEGER REFERENCES dbUser(id)," \
+            "originName TEXT," \
+            "modifyName TEXT," \
+            "UNIQUE (userid, originName))")
+
+        # members store the thread name in record file
         db.execute("CREATE TABLE IF NOT EXISTS dbGroup (" \
             "userid INTEGER REFERENCES dbUser(id)," \
             "id INTEGER PRIMARY KEY," \
             "members TEXT)")
 
+        # dbMessage each message become a entry
         db.execute("CREATE TABLE IF NOT EXISTS dbMessage (" \
             "groupid INTEGER REFERENCES dbGroup(id)," \
             "id INTEGER PRIMARY KEY," \
@@ -65,6 +75,24 @@ class dbSqlite3(db.db):
         self.cursor.execute("UPDATE dbUser SET isReady = 1 " \
             "WHERE id == %d" % (userid))
         self.db.commit()
+
+    def insertFriend(self, userid, friendname):
+        self.cursor.execute("INSERT or IGNORE INTO dbFriend " \
+                "(userid, originName, modifyName) " \
+                "VALUES (?, ?, ?)", (userid, friendname, friendname))
+        self.db.commit()
+
+    def updateFriend(self, userid, originName, modifyName):
+        self.cursor.execute("UPDATE dbFriend " \
+                "SET modifyName = ? " \
+                "WHERE userid = ?, originName = ?", \
+                (userid, friendname, friendname))
+        self.db.commit()
+
+    def getFriend(self, userid):
+        self.cursor.execute("SELECT recordName FROM dbFriend " \
+                "WHERE userid=?", (userid,))
+        return self.cursor.fetchall()
 
     def insertGroup(self, userid, groupname):
         self.cursor.execute("INSERT INTO dbGroup (userid, members) " \

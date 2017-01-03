@@ -23,6 +23,15 @@ class db():
     def updateUser(self, userid):
         raise NotImplementedError
 
+    def insertFriend(self, userid, friendname):
+        raise NotImplementedError
+
+    def insertFriend(self, userid, origiName, modifyName):
+        raise NotImplementedError
+
+    def getFriend(self, userid):
+        raise NotImplementedError
+
     def insertGroup(self, userid, groupname):
         raise NotImplementedError
 

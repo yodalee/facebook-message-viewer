@@ -61,12 +61,26 @@ class dbSqlite3Test(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result[0], newName)
 
+    def testGroup(self):
+        insertnum = random.randrange(10, 20)
+        groups = [self.strgen() for _ in range(insertnum)]
+
+        # insert group and check exist
+        for group in groups:
+            self.database.insertGroup(self.userid, group)
+
+        result = self.database.getGroup(self.userid)
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), insertnum)
+        self.assertListEqual([i for (_, i) in result], groups)
 
     def tearDown(self):
         query = "DELETE FROM dbUser WHERE username = 'testuser'"
         self.database.db.execute(query)
         query = "DELETE FROM dbFriend WHERE userid = ?"
-        self.database.cursor.execute(query, (self.userid,))
+        self.database.db.execute(query, (self.userid,))
+        query = "DELETE FROM dbGroup WHERE userid = ?"
+        self.database.db.execute(query, (self.userid,))
         self.database.db.commit()
 
 class REdictParseTest(unittest.TestCase):

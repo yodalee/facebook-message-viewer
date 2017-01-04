@@ -3,6 +3,8 @@
 
 import unittest
 import datetime
+import string
+import random
 
 from config import REdict, REdictTest
 from worker import ParseHandler
@@ -20,15 +22,51 @@ class ParseHanderTest(unittest.TestCase):
 
 class dbSqlite3Test(unittest.TestCase):
     def setUp(self):
+        self.content = bytes("testcontent", "utf-8")
         self.database = dbSqlite3()
-        self.database.insertUser("testuser", bytes("testcontent", "utf-8"))
+        self.userid = self.database.insertUser(
+            "testuser", self.content)
 
-    def test(self):
-        pass
+    def testGetUpload(self):
+        storedvalue = self.database.getUpload(self.userid)
+        self.assertEqual(storedvalue, self.content)
+
+    def strgen(self, size=10):
+        return ''.join(random.choice(string.ascii_lowercase) \
+            for _ in range(size))
+
+    def testFriend(self):
+        insertnum = random.randrange(10, 20)
+        friends = [self.strgen() for _ in range(insertnum)]
+
+        # insert friend and check exist
+        for friend in friends:
+            self.database.insertFriend(self.userid, friend)
+        query = "SELECT originName, modifyName " \
+                "FROM dbFriend WHERE userid = %d" % self.userid
+        self.database.cursor.execute(query)
+        result = self.database.cursor.fetchall()
+        self.assertEqual(len(result), insertnum)
+
+        # update
+        oldName, newName = random.choice(friends), self.strgen()
+        self.database.updateFriend(
+            self.userid, oldName, newName)
+
+        query = "SELECT modifyName FROM dbFriend " \
+                "WHERE userid = ? AND originName = ?"
+        self.database.cursor.execute(query, (self.userid, oldName))
+        result = self.database.cursor.fetchone()
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result[0], newName)
+
 
     def tearDown(self):
         query = "DELETE FROM dbUser WHERE username = 'testuser'"
         self.database.db.execute(query)
+        query = "DELETE FROM dbFriend WHERE userid = ?"
+        self.database.cursor.execute(query, (self.userid,))
         self.database.db.commit()
 
 class REdictParseTest(unittest.TestCase):

@@ -86,8 +86,8 @@ class dbSqlite3(db.db):
     def updateFriend(self, userid, originName, modifyName):
         self.cursor.execute("UPDATE dbFriend " \
                 "SET modifyName = ? " \
-                "WHERE userid = ?, originName = ?", \
-                (userid, friendname, friendname))
+                "WHERE userid = ? " \
+                "AND originName = ?", (modifyName, userid, originName))
         self.db.commit()
 
     def getFriend(self, userid):

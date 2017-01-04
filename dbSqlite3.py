@@ -60,7 +60,7 @@ class dbSqlite3(db.db):
                 "(SELECT id FROM dbUser WHERE username = '%s'), " \
                 "?, ?, 0)" % (username)
         self.cursor.execute(query, (sqlite3.Binary(content), username))
-        userid = str(self.cursor.lastrowid)
+        userid = self.cursor.lastrowid
         self.db.commit()
 
         return userid

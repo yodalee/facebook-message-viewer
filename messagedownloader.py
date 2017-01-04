@@ -47,7 +47,7 @@ def MessageUploadFormHandler():
     userid = database.insertUser(username, file_content)
 
     # invoke another process to processing
-    p = Process(target = parser.parse, args=(int(userid),))
+    p = Process(target = parser.parse, args=(userid,))
     p.start()
 
     redirect('/view')

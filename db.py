@@ -7,22 +7,35 @@ class db():
     def createdb(self):
         return None
 
+    def insertUser(self, username, content):
+        """create entry of user
+
+        :content: raw content uploaded by user
+        :username: username to be saved
+        :return: userid of the inserted id
+
+        """
+        raise NotImplementedError
+
     def getUpload(self, userid):
         raise NotImplementedError
 
     def updateUser(self, userid):
         raise NotImplementedError
 
-    def insertUser(self, content):
-        """create entry of user
+    def insertFriend(self, userid, friendname):
+        raise NotImplementedError
 
-        :content: raw content uploaded by user
-        :return: userid of the inserted id
+    def insertFriend(self, userid, origiName, modifyName):
+        raise NotImplementedError
 
-        """
+    def getFriend(self, userid):
         raise NotImplementedError
 
     def insertGroup(self, userid, groupname):
+        raise NotImplementedError
+
+    def getGroup(self, userid):
         raise NotImplementedError
 
     def insertMessage(self, msgbuf):
@@ -32,8 +45,5 @@ class db():
         """
         raise NotImplementedError
 
-    def getGroup(self, userid):
-        raise NotImplementedError
-
-    def getUser(self, groupname, startstr, endstr):
+    def getMessage(self, groupname, startstr, endstr):
         raise NotImplementedError

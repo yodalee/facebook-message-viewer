@@ -1,6 +1,8 @@
 *.pyc
 *.swp
 *.db
+/testcase
 # Vue.js generated file
 /template/view.html
 /static
+

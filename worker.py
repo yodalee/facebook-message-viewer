@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import time
 import logging
+from datetime import datetime
 from lxml import etree
-import datetime
 from io import BytesIO
 
 from config import REdict
@@ -11,15 +11,21 @@ from dbSqlite3 import dbSqlite3
 database = dbSqlite3()
 
 class ParseHandler():
-    xpathContent = etree.XPath("//div[@class='contents']")
-    xpathThread  = etree.XPath(".//div[@class='thread']")
-    xpathMessage = etree.XPath(".//div[@class='message']")
-    xpathAuthor  = etree.XPath(".//span[@class='user']//text()")
-    xpathTime    = etree.XPath(".//span[@class='meta']//text()")
-    xpathText    = etree.XPath(".//p")
+    def __init__(self):
+        self.xpathContent = etree.XPath("//div[@class='contents']")
+        self.xpathUser    = etree.XPath(".//h1//text()")
+        self.xpathThread  = etree.XPath(".//div[@class='thread']")
+        self.xpathMessage = etree.XPath(".//div[@class='message']")
+        self.xpathAuthor  = etree.XPath(".//span[@class='user']//text()")
+        self.xpathTime    = etree.XPath(".//span[@class='meta']//text()")
+        self.xpathText    = etree.XPath(".//p")
+        self.lang = None
 
-    def simpleCheck(self, file_content, lang):
-        logging.info("initial parse check lang: {}".format(lang))
+    def setLang(self, lang):
+        self.lang = REdict[lang]
+
+    def simpleCheck(self, file_content):
+        logging.info("initial parse check: {}".format(self.lang["showName"]))
 
         parser = etree.HTMLParser(encoding='UTF-8')
         root = etree.parse(BytesIO(file_content), parser)
@@ -31,10 +37,37 @@ class ParseHandler():
         thread = self.xpathThread(content)[0]
         timetext = self.xpathTime(thread)[0]
         timetext = timetext.strip().rsplit(" ", 1)[0]
-        msgtime = datetime.datetime.strptime(timetext, REdict[lang]["parseStr"])
+        msgtime = datetime.strptime(timetext, self.lang["parseStr"])
 
-    def parse(self, lang, userid):
-        logging.info("user_id: {}, lang: {}".format(userid, lang))
+    def parseUsername(self, file_content):
+        parser = etree.HTMLParser(encoding='UTF-8')
+        root = etree.parse(BytesIO(file_content), parser)
+        content = self.xpathContent(root)[0]
+        username = self.xpathUser(content)[0].strip()
+
+        logging.info("Parse username: {}".format(username))
+
+        return username
+
+    def parseGroup(self, threads, userid):
+        """parseGroup: parse through all group and build a table
+           to all username in this message file
+        """
+        # build dictionary
+        friendset = set()
+        idx = 0
+        for thread in threads:
+            friendset |= set(map(lambda x: x.strip(), thread.text.split(',')))
+
+        logging.info("Parse all friend, got {} unique friend name".format(
+            len(friendset)))
+
+        # store friendlist
+        for name in friendset:
+            database.insertFriend(userid, name)
+
+    def parse(self, userid):
+        logging.info("user_id: {}, lang: {}".format(userid, self.lang["showName"]))
 
         s = database.getUpload(userid)
 
@@ -44,21 +77,29 @@ class ParseHandler():
         content = self.xpathContent(root)[0]
         threads = self.xpathThread(content)
 
-        # process group
+        username = self.xpathUser(content)[0].strip()
+
+        # start processing
+        starttime = time.time()
+
+        # built friend table
+        self.parseGroup(threads, userid)
+
+        # prepare group
+        existGroup = database.getGroup(userid)
         grouplist = dict()
+        for (groupid, members) in existGroup:
+            grouplist[members] = groupid
         groupnum = len(threads)
+
+        # variable
         processed = 0
         idx = 0
         msgbuf = [None] * 512
+        subtime = 0
+        prevtime = datetime(2001, 1, 1)
 
-        # process group, user name
-        for thread in threads:
-            members = thread.text.strip()
-
-
-
-        # start processing message
-        print("Process start")
+        print("Process message start")
         starttime = time.time()
 
         for thread in threads:
@@ -83,12 +124,15 @@ class ParseHandler():
                 # cut down last string "UTC+08"
                 # which cause dateparser failed to parse
                 timetext = timetext.strip().rsplit(" ", 1)[0]
-                msgtime = datetime.datetime.strptime(
-                        timetext, REdict[lang]["parseStr"])
-
+                msgtime = datetime.strptime(timetext, self.lang["parseStr"])
+                if msgtime == prevtime:
+                    subtime = subtime + 1
+                else:
+                    prevtime = msgtime
+                    subtime = 0
                 text = (text.text or "").strip()
 
-                msgbuf[idx] = (groupid, author, msgtime, text)
+                msgbuf[idx] = (groupid, author, msgtime, subtime, text)
 
                 idx = idx + 1
                 if idx == 512:

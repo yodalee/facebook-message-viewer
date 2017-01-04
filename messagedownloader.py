@@ -34,18 +34,20 @@ def MessageUploadFormHandler():
 
     print("lang: {}, filename: {}".format(lang, filename))
 
+    parser.setLang(lang)
     # do simple check
     try:
-        parser.simpleCheck(file_content, lang)
+        parser.simpleCheck(file_content)
     except Exception as e:
         print(e)
         redirect('/view')
 
-    # simple check OK, store database
-    userid = database.insertUser(file_content)
+    # simple check OK, parse username store database
+    username = parser.parseUsername(file_content)
+    userid = database.insertUser(username, file_content)
 
     # invoke another process to processing
-    p = Process(target = parser.parse, args=(lang, int(userid)))
+    p = Process(target = parser.parse, args=(int(userid),))
     p.start()
 
     redirect('/view')
@@ -75,7 +77,8 @@ def MessageFetchHandler():
     if reqType == "user":
         pass
     elif reqType == "groups":
-        groups = database.getGroup(userid)
+        groupquery = database.getGroup(userid)
+        groups = [i[1] for i in groupquery]
         print("Get {} groups".format(len(groups)))
         return json.dumps({"groups": groups})
 
@@ -83,8 +86,7 @@ def MessageFetchHandler():
         groupname = request.query.group
         startstr = request.query.startdate
         endstr = request.query.enddate
-        messages = database.getUser(groupname, startstr, endstr)
-
+        messages = database.getMessage(groupname, startstr, endstr)
 
         ret = [{"author": msg[1],
             "time": msg[2],
@@ -100,6 +102,7 @@ def setup_routing(app):
     app.route('/static/<path:path>', 'GET', callback)
     app.route('/fetch', 'GET', MessageFetchHandler)
 
-app = Bottle()
-setup_routing(app)
-run(app=app, host='localhost', port=8080, reloader=True)
+if __name__ == "__main__":
+    app = Bottle()
+    setup_routing(app)
+    run(app=app, host='localhost', port=8080, reloader=True)

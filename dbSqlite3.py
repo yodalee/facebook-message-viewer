@@ -44,6 +44,7 @@ class dbSqlite3(db.db):
             "content TEXT," \
             "UNIQUE (groupid, author, time, content))")
 
+        db.commit()
         return db
 
     def insertUser(self, username, content):

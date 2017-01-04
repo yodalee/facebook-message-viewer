@@ -6,6 +6,7 @@ import datetime
 
 from config import REdict, REdictTest
 from worker import ParseHandler
+from dbSqlite3 import dbSqlite3
 
 class ParseHanderTest(unittest.TestCase):
     def setUp(self):
@@ -16,6 +17,19 @@ class ParseHanderTest(unittest.TestCase):
     def test_parseUsername(self):
         username = self.parser.parseUsername(self.content)
         self.assertEqual(username, "葉闆")
+
+class dbSqlite3Test(unittest.TestCase):
+    def setUp(self):
+        self.database = dbSqlite3()
+        self.database.insertUser("testuser", bytes("testcontent", "utf-8"))
+
+    def test(self):
+        pass
+
+    def tearDown(self):
+        query = "DELETE FROM dbUser WHERE username = 'testuser'"
+        self.database.db.execute(query)
+        self.database.db.commit()
 
 class REdictParseTest(unittest.TestCase):
     pass

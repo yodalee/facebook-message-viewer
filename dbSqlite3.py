@@ -28,7 +28,7 @@ class dbSqlite3(db.db):
             "modifyName TEXT," \
             "UNIQUE (userid, originName))")
 
-        # members store the thread name in record file
+        # dbGroup store the thread name in record file
         db.execute("CREATE TABLE IF NOT EXISTS dbGroup (" \
             "userid INTEGER REFERENCES dbUser(id)," \
             "id INTEGER PRIMARY KEY," \

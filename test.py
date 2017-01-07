@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-import datetime
+from datetime import datetime, timedelta
 import string
+
 import random
 
 from config import REdict, REdictTest
@@ -74,11 +75,46 @@ class dbSqlite3Test(unittest.TestCase):
         self.assertEqual(len(result), insertnum)
         self.assertListEqual([i for (_, i) in result], groups)
 
+    def testMessage(self):
+        # generate messages in three groups 2008 grp1 2010 grp2 2012 grp3
+        insertnum = [random.randrange(10, 20) for _ in range(3)]
+        groupname = self.strgen()
+        groupid = self.database.insertGroup(self.userid, groupname)
+        author = self.strgen()
+        starttime = datetime(2008, 1, 1)
+        msgbuf = []
+        count = 0
+        for i, n in enumerate(insertnum):
+            for _ in range(n):
+                t = starttime + timedelta(
+                    days = random.randrange(365*2*i, 365*2*(i+1)))
+                msgbuf.append((groupid, author, t, 0, self.strgen(500)))
+        self.database.insertMessage(msgbuf)
+
+        # test query
+        get = self.database.getMessage(groupname, None, "20100101")
+        self.assertEqual(len(get), insertnum[0])
+        get = self.database.getMessage(groupname, "20100101", "20120101")
+        self.assertEqual(len(get), insertnum[1])
+        get = self.database.getMessage(groupname, "20120101", None) 
+        self.assertEqual(len(get), insertnum[2])
+
+    def testSameTime(self):
+        pass
+
     def tearDown(self):
         query = "DELETE FROM dbUser WHERE username = 'testuser'"
         self.database.db.execute(query)
         query = "DELETE FROM dbFriend WHERE userid = ?"
         self.database.db.execute(query, (self.userid,))
+        # clear message if exist
+        query = "SELECT id FROM dbGroup WHERE userid = ?"
+        self.database.cursor.execute(query, (self.userid,))
+        groupid = self.database.cursor.fetchone()
+        if groupid:
+            groupid = groupid[0]
+            query = "DELETE FROM dbMessage WHERE groupid = ?"
+            self.database.db.execute(query, (groupid,))
         query = "DELETE FROM dbGroup WHERE userid = ?"
         self.database.db.execute(query, (self.userid,))
         self.database.db.commit()
@@ -89,7 +125,7 @@ class REdictParseTest(unittest.TestCase):
 def testParseGen(k, v):
     def test(self):
         timetext = REdictTest[k]["q"].rsplit(" ", 1)[0]
-        parse = datetime.datetime.strptime(timetext, v["parseStr"])
+        parse = datetime.strptime(timetext, v["parseStr"])
         ans = REdictTest[k]["a"]
         assert(ans == parse)
     return test

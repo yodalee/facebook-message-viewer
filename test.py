@@ -100,7 +100,20 @@ class dbSqlite3Test(unittest.TestCase):
         self.assertEqual(len(get), insertnum[2])
 
     def testSameTime(self):
-        pass
+        groupname = self.strgen()
+        groupid = self.database.insertGroup(self.userid, groupname)
+        author = self.strgen()
+        msgbuf = []
+        for i in range(3):
+            msgbuf.append((
+                groupid, author,
+                datetime(2008, 1, 1), i,
+                "message{}".format(i)))
+        self.database.insertMessage(msgbuf)
+
+        get = self.database.getMessage(groupname)
+        for i in range(len(msgbuf)):
+            self.assertEqual("message{}".format(i), get[len(msgbuf)-i-1][3])
 
     def tearDown(self):
         query = "DELETE FROM dbUser WHERE username = 'testuser'"

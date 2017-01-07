@@ -117,7 +117,7 @@ class dbSqlite3(db.db):
                 "VALUES (?,?,?,?,?)",
                 msgbuf)
 
-    def getMessage(self, groupname, startstr, endstr):
+    def getMessage(self, groupname, startstr=None, endstr=None):
         startdate = datetime.datetime.strptime(startstr or "20010101", "%Y%m%d")
         if endstr:
             enddate = datetime.datetime.strptime(endstr, "%Y%m%d")

@@ -42,7 +42,7 @@ class dbSqlite3Test(unittest.TestCase):
 
         # insert friend and check exist
         for friend in friends:
-            self.database.insertFriend(self.userid, friend)
+            self.database.insertFriend(self.userid, friend, friend)
         query = "SELECT originName, modifyName " \
                 "FROM dbFriend WHERE userid = %d" % self.userid
         self.database.cursor.execute(query)

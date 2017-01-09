@@ -21,10 +21,10 @@ class db():
     def updateUser(self, userid):
         raise NotImplementedError
 
-    def insertFriend(self, userid, friendname):
+    def insertFriend(self, userid, originName, modifyName):
         raise NotImplementedError
 
-    def insertFriend(self, userid, origiName, modifyName):
+    def updateFriend(self, userid, originName, modifyName):
         raise NotImplementedError
 
     def getFriend(self, userid):

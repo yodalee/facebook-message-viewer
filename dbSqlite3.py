@@ -77,10 +77,10 @@ class dbSqlite3(db.db):
             "WHERE id == %d" % (userid))
         self.db.commit()
 
-    def insertFriend(self, userid, friendname):
+    def insertFriend(self, userid, originName, modifyName):
         self.cursor.execute("INSERT or IGNORE INTO dbFriend " \
                 "(userid, originName, modifyName) " \
-                "VALUES (?, ?, ?)", (userid, friendname, friendname))
+                "VALUES (?, ?, ?)", (userid, originName, modifyName))
         self.db.commit()
 
     def updateFriend(self, userid, originName, modifyName):

@@ -64,7 +64,7 @@ class ParseHandler():
 
         # store friendlist
         for name in friendset:
-            database.insertFriend(userid, name)
+            database.insertFriend(userid, name, name)
 
     def parse(self, userid):
         logging.info("user_id: {}, lang: {}".format(userid, self.lang["showName"]))

@@ -28,7 +28,7 @@ class dbSqlite3(db.db):
             "modifyName TEXT," \
             "UNIQUE (userid, originName))")
 
-        # members store the thread name in record file
+        # dbGroup store the thread name in record file
         db.execute("CREATE TABLE IF NOT EXISTS dbGroup (" \
             "userid INTEGER REFERENCES dbUser(id)," \
             "id INTEGER PRIMARY KEY," \
@@ -44,6 +44,7 @@ class dbSqlite3(db.db):
             "content TEXT," \
             "UNIQUE (groupid, author, time, content))")
 
+        db.commit()
         return db
 
     def insertUser(self, username, content):
@@ -59,7 +60,7 @@ class dbSqlite3(db.db):
                 "(SELECT id FROM dbUser WHERE username = '%s'), " \
                 "?, ?, 0)" % (username)
         self.cursor.execute(query, (sqlite3.Binary(content), username))
-        userid = str(self.cursor.lastrowid)
+        userid = self.cursor.lastrowid
         self.db.commit()
 
         return userid
@@ -76,17 +77,17 @@ class dbSqlite3(db.db):
             "WHERE id == %d" % (userid))
         self.db.commit()
 
-    def insertFriend(self, userid, friendname):
+    def insertFriend(self, userid, originName, modifyName):
         self.cursor.execute("INSERT or IGNORE INTO dbFriend " \
                 "(userid, originName, modifyName) " \
-                "VALUES (?, ?, ?)", (userid, friendname, friendname))
+                "VALUES (?, ?, ?)", (userid, originName, modifyName))
         self.db.commit()
 
     def updateFriend(self, userid, originName, modifyName):
         self.cursor.execute("UPDATE dbFriend " \
                 "SET modifyName = ? " \
-                "WHERE userid = ?, originName = ?", \
-                (userid, friendname, friendname))
+                "WHERE userid = ? " \
+                "AND originName = ?", (modifyName, userid, originName))
         self.db.commit()
 
     def getFriend(self, userid):
@@ -116,7 +117,7 @@ class dbSqlite3(db.db):
                 "VALUES (?,?,?,?,?)",
                 msgbuf)
 
-    def getMessage(self, groupname, startstr, endstr):
+    def getMessage(self, groupname, startstr=None, endstr=None):
         startdate = datetime.datetime.strptime(startstr or "20010101", "%Y%m%d")
         if endstr:
             enddate = datetime.datetime.strptime(endstr, "%Y%m%d")

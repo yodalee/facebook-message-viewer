@@ -24,20 +24,30 @@ class ParseHandler():
     def setLang(self, lang):
         self.lang = REdict[lang]
 
-    def simpleCheck(self, file_content):
+    def isValid(self, file_content):
+        """isLangValid: check uploaded file_content is valid
+        """
         logging.info("initial parse check: {}".format(self.lang["showName"]))
 
         parser = etree.HTMLParser(encoding='UTF-8')
         root = etree.parse(BytesIO(file_content), parser)
 
         # process group
-        content = self.xpathContent(root)[0]
+        try:
+            content = eelf.xpathContent(root)[0]
+            thread = self.xpathThread(content)[0]
 
-        # start processing
-        thread = self.xpathThread(content)[0]
-        timetext = self.xpathTime(thread)[0]
-        timetext = timetext.strip().rsplit(" ", 1)[0]
-        msgtime = datetime.strptime(timetext, self.lang["parseStr"])
+            # check extract content safe
+            author = self.xpathAuthor(thread)
+            timetext = self.xpathTime(thread)
+            text = self.xpathText(thread)
+
+            # check languag setting valid
+            timetext = timetext[0].strip().rsplit(" ", 1)[0]
+            msgtime = datetime.strptime(timetext, self.lang["parseStr"])
+        except Exception as e:
+            return False
+        return True
 
     def parseUsername(self, file_content):
         parser = etree.HTMLParser(encoding='UTF-8')

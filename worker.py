@@ -59,6 +59,22 @@ class ParseHandler():
         logging.info("Parse username: {}".format(username))
         return username
 
+    def parseUserid(self):
+        username = self.xpathUser(self.content)[0].strip()
+        threads = self.xpathThread(self.content)
+        ll = []
+        for thread in threads:
+            members = list(map(
+                lambda x: x.strip().rstrip('@facebook.com'),
+                thread.text.split(',')))
+
+            if username not in members:
+                ll.extend(members)
+
+        userfbid = max(ll or [0], key=ll.count)
+        logging.info("Parse userfbid: {}".format(userfbid))
+        return userfbid
+
     def parseGroup(self, threads, userid):
         """parseGroup: parse through all group and build a table
            to all username in this message file

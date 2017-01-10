@@ -11,7 +11,7 @@ from config import REdict, REdictTest
 from worker import ParseHandler
 from dbSqlite3 import dbSqlite3
 
-class ParseHanderTest(unittest.TestCase):
+class ParseHandlerTest(unittest.TestCase):
     def setUp(self):
         with open("testcase/test-en.htm", "rb") as f:
             self.parser = ParseHandler()
@@ -22,6 +22,10 @@ class ParseHanderTest(unittest.TestCase):
     def test_parseUsername(self):
         username = self.parser.parseUsername()
         self.assertEqual(username, "葉闆")
+
+    def test_parseUserid(self):
+        username = self.parser.parseUserid()
+        self.assertEqual(username, "100000000000000")
 
 class dbSqlite3Test(unittest.TestCase):
     def setUp(self):

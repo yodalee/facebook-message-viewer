@@ -35,16 +35,13 @@ def MessageUploadFormHandler():
     print("lang: {}, filename: {}".format(lang, filename))
 
     parser.setLang(lang)
-    # do simple check
-    try:
-        parser.simpleCheck(file_content)
-    except Exception as e:
-        print(e)
+    if not parser.isValid(file_content):
+        print("The uploaded file not valid")
         redirect('/view')
 
     # simple check OK, parse username store database
-    username = parser.parseUsername(file_content)
-    userid = database.insertUser(username, file_content)
+    username = parser.parseUsername()
+    userid = database.insertUser(username)
 
     # invoke another process to processing
     p = Process(target = parser.parse, args=(userid,))

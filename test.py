@@ -11,26 +11,27 @@ from config import REdict, REdictTest
 from worker import ParseHandler
 from dbSqlite3 import dbSqlite3
 
-class ParseHanderTest(unittest.TestCase):
+class ParseHandlerTest(unittest.TestCase):
     def setUp(self):
         with open("testcase/test-en.htm", "rb") as f:
             self.parser = ParseHandler()
-            self.content = f.read()
+            self.parser.setLang("en")
+            content = f.read()
+            self.parser.isValid(content)
 
     def test_parseUsername(self):
-        username = self.parser.parseUsername(self.content)
+        username = self.parser.parseUsername()
         self.assertEqual(username, "葉闆")
+
+    def test_parseUserid(self):
+        username = self.parser.parseUserid()
+        self.assertEqual(username, "100000000000000")
 
 class dbSqlite3Test(unittest.TestCase):
     def setUp(self):
         self.content = bytes("testcontent", "utf-8")
         self.database = dbSqlite3()
-        self.userid = self.database.insertUser(
-            "testuser", self.content)
-
-    def testGetUpload(self):
-        storedvalue = self.database.getUpload(self.userid)
-        self.assertEqual(storedvalue, self.content)
+        self.userid = self.database.insertUser("testuser")
 
     def strgen(self, size=10):
         return ''.join(random.choice(string.ascii_lowercase) \

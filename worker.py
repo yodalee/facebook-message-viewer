@@ -19,35 +19,61 @@ class ParseHandler():
         self.xpathAuthor  = etree.XPath(".//span[@class='user']//text()")
         self.xpathTime    = etree.XPath(".//span[@class='meta']//text()")
         self.xpathText    = etree.XPath(".//p")
+        self.parser = etree.HTMLParser(encoding='UTF-8')
         self.lang = None
+        self.content = None
 
     def setLang(self, lang):
         self.lang = REdict[lang]
 
-    def simpleCheck(self, file_content):
+    def isValid(self, file_content):
+        """isLangValid: check uploaded file_content is valid
+        """
         logging.info("initial parse check: {}".format(self.lang["showName"]))
 
-        parser = etree.HTMLParser(encoding='UTF-8')
-        root = etree.parse(BytesIO(file_content), parser)
+        root = etree.parse(BytesIO(file_content), self.parser)
 
         # process group
-        content = self.xpathContent(root)[0]
+        try:
+            content = self.xpathContent(root)[0]
+            thread = self.xpathThread(content)[0]
 
-        # start processing
-        thread = self.xpathThread(content)[0]
-        timetext = self.xpathTime(thread)[0]
-        timetext = timetext.strip().rsplit(" ", 1)[0]
-        msgtime = datetime.strptime(timetext, self.lang["parseStr"])
+            # check extract content safe
+            author = self.xpathAuthor(thread)
+            timetext = self.xpathTime(thread)
+            text = self.xpathText(thread)
 
-    def parseUsername(self, file_content):
-        parser = etree.HTMLParser(encoding='UTF-8')
-        root = etree.parse(BytesIO(file_content), parser)
-        content = self.xpathContent(root)[0]
-        username = self.xpathUser(content)[0].strip()
+            # check languag setting valid
+            timetext = timetext[0].strip().rsplit(" ", 1)[0]
+            msgtime = datetime.strptime(timetext, self.lang["parseStr"])
 
+            # everything ok, store value
+            self.content = content
+            return True
+        except Exception as e:
+            print(e)
+            return False
+
+    def parseUsername(self):
+        username = self.xpathUser(self.content)[0].strip()
         logging.info("Parse username: {}".format(username))
-
         return username
+
+    def parseUserid(self):
+        username = self.xpathUser(self.content)[0].strip()
+        threads = self.xpathThread(self.content)
+        ll = []
+        for thread in threads:
+            members = list(map(
+                lambda x: x.strip().rstrip('@facebook.com'),
+                thread.text.split(',')))
+
+            if username not in members:
+                ll.extend(members)
+
+        userfbid = max(ll or [0], key=ll.count)
+        logging.info("Parse userfbid: {}".format(userfbid))
+        return userfbid
 
     def parseGroup(self, threads, userid):
         """parseGroup: parse through all group and build a table
@@ -68,19 +94,9 @@ class ParseHandler():
 
     def parse(self, userid):
         logging.info("user_id: {}, lang: {}".format(userid, self.lang["showName"]))
-
-        s = database.getUpload(userid)
-
-        # prepare parser
-        parser = etree.HTMLParser(encoding='UTF-8')
-        root = etree.parse(BytesIO(s), parser)
-        content = self.xpathContent(root)[0]
-        threads = self.xpathThread(content)
-
-        username = self.xpathUser(content)[0].strip()
-
-        # start processing
         starttime = time.time()
+
+        threads = self.xpathThread(self.content)
 
         # built friend table
         self.parseGroup(threads, userid)

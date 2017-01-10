@@ -17,7 +17,6 @@ class dbSqlite3(db.db):
         # dbUser: table about user, uploaded blob, username
         db.execute("CREATE TABLE IF NOT EXISTS dbUser (" \
             "id INTEGER PRIMARY KEY," \
-            "file BLOB," \
             "username TEXT," \
             "isReady INTEGER)")
 
@@ -47,7 +46,7 @@ class dbSqlite3(db.db):
         db.commit()
         return db
 
-    def insertUser(self, username, content):
+    def insertUser(self, username):
         """update content or create entry for user
 
         :content: raw content uploaded by user
@@ -55,22 +54,15 @@ class dbSqlite3(db.db):
 
         """
         query = "INSERT OR REPLACE INTO dbUser " \
-                "(id, file, username, isReady) " \
+                "(id, username, isReady) " \
                 "VALUES (" \
                 "(SELECT id FROM dbUser WHERE username = '%s'), " \
-                "?, ?, 0)" % (username)
-        self.cursor.execute(query, (sqlite3.Binary(content), username))
+                "?, 0)" % (username)
+        self.cursor.execute(query, (username,))
         userid = self.cursor.lastrowid
         self.db.commit()
 
         return userid
-
-    def getUpload(self, userid):
-        # get upload data
-        self.cursor.execute("SELECT file FROM dbUser " \
-                "WHERE id == %d" % (userid))
-        data = self.cursor.fetchone()
-        return data[0]
 
     def updateUser(self, userid):
         self.cursor.execute("UPDATE dbUser SET isReady = 1 " \

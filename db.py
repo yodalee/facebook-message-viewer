@@ -15,9 +15,6 @@ class db():
         """
         raise NotImplementedError
 
-    def getUpload(self, userid):
-        raise NotImplementedError
-
     def updateUser(self, userid):
         raise NotImplementedError
 

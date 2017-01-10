@@ -89,8 +89,7 @@ class ParseHandler():
             len(friendset)))
 
         # store friendlist
-        for name in friendset:
-            database.insertFriend(userid, name, name)
+        return friendset
 
     def parse(self, userid):
         logging.info("user_id: {}, lang: {}".format(userid, self.lang["showName"]))
@@ -98,8 +97,13 @@ class ParseHandler():
 
         threads = self.xpathThread(self.content)
 
+        # insert userid
+        userfbid = self.parseUserid()
+
         # built friend table
-        self.parseGroup(threads, userid)
+        friendset = self.parseGroup(threads, userid)
+        for name in friendset:
+            database.insertFriend(userid, name, name)
 
         # prepare group
         existGroup = database.getGroup(userid)

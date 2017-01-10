@@ -44,10 +44,7 @@ class dbSqlite3Test(unittest.TestCase):
         # insert friend and check exist
         for friend in friends:
             self.database.insertFriend(self.userid, friend, friend)
-        query = "SELECT originName, modifyName " \
-                "FROM dbFriend WHERE userid = %d" % self.userid
-        self.database.cursor.execute(query)
-        result = self.database.cursor.fetchall()
+        result = self.database.getFriend(self.userid)
         self.assertEqual(len(result), insertnum)
 
         # update
@@ -55,13 +52,11 @@ class dbSqlite3Test(unittest.TestCase):
         self.database.updateFriend(
             self.userid, oldName, newName)
 
-        query = "SELECT modifyName FROM dbFriend " \
-                "WHERE userid = ? AND originName = ?"
-        self.database.cursor.execute(query, (self.userid, oldName))
-        result = self.database.cursor.fetchone()
-
-        self.assertIsNotNone(result)
-        self.assertEqual(result[0], newName)
+        # get
+        result = self.database.getFriend(self.userid)
+        for ret in result:
+            if ret[0] == oldName:
+                self.assertEqual(ret[1], newName)
 
     def testGroup(self):
         insertnum = random.randrange(10, 20)

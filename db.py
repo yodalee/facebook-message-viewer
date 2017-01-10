@@ -7,7 +7,7 @@ class db():
     def createdb(self):
         return None
 
-    def insertUser(self, username, content):
+    def insertUser(self, username):
         """create entry of user
         :username: username to be saved
         :content: raw content uploaded by user

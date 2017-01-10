@@ -83,7 +83,7 @@ class dbSqlite3(db.db):
         self.db.commit()
 
     def getFriend(self, userid):
-        self.cursor.execute("SELECT recordName FROM dbFriend " \
+        self.cursor.execute("SELECT originName, modifyName FROM dbFriend " \
                 "WHERE userid=?", (userid,))
         return self.cursor.fetchall()
 

@@ -1,1 +1,53 @@
-<!DOCTYPE html><html><head><meta charset=utf-8><title>message-downloader</title><link href=/static/css/app.57c7a825b017f3ca70b5ec7f53278ebd.css rel=stylesheet></head><body><div id=app></div><script type=text/javascript src=/static/js/manifest.8e53007138b5515d2776.js></script><script type=text/javascript src=/static/js/vendor.a1eb59246143a7c9f17e.js></script><script type=text/javascript src=/static/js/app.0f917dd166a668c04159.js></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Facebook Message Viewer</title>
+  <!-- bootstrap -->
+  <link rel="stylesheet" href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css">
+</head>
+<body>
+  <!-- Nav tabs -->
+  <nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">Facebook Message Viewer</a>
+      </div>
+      <ul class="nav navbar-nav" id="viewTab" role="tablist">
+        <li><a href="#view"   aria-controls="view"   role="tab" data-toggle="tab">View</a></li>
+        <li><a href="#upload" aria-controls="upload" role="tab" data-toggle="tab">Upload</a></li>
+        <li><a href="#about"  aria-controls="about"  role="tab" data-toggle="tab">About</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="view">
+      1
+    </div>
+    <div role="tabpanel" class="tab-pane" id="upload">
+      <form action="{{ upload_url }}" method="POST" enctype="multipart/form-data" onsubmit="return checkSubmit(this)">
+        Upload Message.htm: <input type="file" name="file"><br>
+        Choose Your Language:
+        <select name="lang" id="lang" onchange="checklang()">
+          <option value="">----</option>
+          {% for key,value in langs.items() %}
+            <option value="{{ key }}">{{ value['showName'] }}</option>
+          {% endfor %}
+        </select></br>
+        <input type="submit" id="submit" name="submit" value="Submit" disabled=true>
+      </form>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="about">
+      3
+    </div>
+  </div>
+  <!-- bootstrap -->
+  <script type="text/javascript" charset="utf-8" src="/static/bower_components/jquery/dist/jquery.min.js"></script>
+  <script type="text/javascript" charset="utf-8" src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+  <!-- upload check js -->
+  <script type="text/javascript" charset="utf-8" src="/static/js/upload.js"></script>
+</body>
+</html>

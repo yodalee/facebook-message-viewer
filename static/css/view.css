@@ -1,0 +1,37 @@
+.group {
+  background-color: hsl(169, 100%, 41%);
+  padding: .5em;
+  margin: .3em 0;
+  border-radius: .4em;
+  cursor: pointer;
+  color: #333;
+}
+
+.group .span {
+  display: inline-block;
+  padding: 0 .2em;
+}
+
+.message {
+  background: hsla(209, 100%, 41%, 1);
+  color: #fff;
+  padding: .8em;
+  border-radius: .4em;
+  margin-bottom: 1em;
+  width: 50%;
+}
+
+.message .meta {
+  margin-bottom: .2em;
+  clear: both;
+  font-size: .8em;
+}
+
+.message .meta .name {
+  font-weight: bold;
+}
+
+.message .meta .time {
+  color: #dedede;
+  float: right;
+}

@@ -7,6 +7,7 @@
   <title>Facebook Message Viewer</title>
   <!-- bootstrap -->
   <link rel="stylesheet" href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/css/view.css" type="text/css" media="screen" title="no title" charset="utf-8">
 </head>
 <body>
   <!-- Nav tabs -->
@@ -24,30 +25,52 @@
   </nav>
 
   <div class="tab-content">
+    <!-- view -->
     <div role="tabpanel" class="tab-pane active" id="view">
-      1
+      <div class="container col-md-3">
+        <h2>Group List:</h2>
+        <div id="groups" class="btn-group" data-toggle="buttons-radio"></div>
+      </div>
+      <div class="container col-md-9">
+        <h2>Filter:</h2>
+        <div class="filter"></div>
+        <h2>Message List:</h2>
+        <div id="messages"></div>
+      </div>
     </div>
+    <!-- upload -->
     <div role="tabpanel" class="tab-pane" id="upload">
-      <form action="{{ upload_url }}" method="POST" enctype="multipart/form-data" onsubmit="return checkSubmit(this)">
-        Upload Message.htm: <input type="file" name="file"><br>
-        Choose Your Language:
-        <select name="lang" id="lang" onchange="checklang()">
-          <option value="">----</option>
-          {% for key,value in langs.items() %}
-            <option value="{{ key }}">{{ value['showName'] }}</option>
-          {% endfor %}
-        </select></br>
-        <input type="submit" id="submit" name="submit" value="Submit" disabled=true>
-      </form>
+      <div class="container col-centered">
+        <h2>Upload steps:</h2>
+        <p class="text-center">
+        1. Click  at the top right of any Facebook page and select Settings</br>
+        2. Click Download a copy of your Facebook data below your General Account Settings</br>
+        3. Click Start My Archive</br>
+        </p>
+        <h2>Upload it here:</h2>
+        <form action="{{ upload_url }}" method="POST" enctype="multipart/form-data" onsubmit="return checkSubmit(this)">
+          Upload Message.htm: <input type="file" name="file"><br>
+          Choose Your Language:
+          <select name="lang" id="lang" onchange="checklang()">
+            <option value="">----</option>
+            {% for key,value in langs.items() %}
+              <option value="{{ key }}">{{ value['showName'] }}</option>
+            {% endfor %}
+          </select></br>
+          <input type="submit" id="submit" name="submit" value="Submit" disabled=true>
+        </form>
+      </div>
     </div>
+    <!-- about -->
     <div role="tabpanel" class="tab-pane" id="about">
-      3
     </div>
   </div>
   <!-- bootstrap -->
   <script type="text/javascript" charset="utf-8" src="/static/bower_components/jquery/dist/jquery.min.js"></script>
   <script type="text/javascript" charset="utf-8" src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script type="text/javascript" charset="utf-8" src="static/bower_components/jquery-load-template/dist/jquery.loadTemplate.min.js"></script>
   <!-- upload check js -->
   <script type="text/javascript" charset="utf-8" src="/static/js/upload.js"></script>
+  <script type="text/javascript" charset="utf-8" src="/static/js/view.js"></script>
 </body>
 </html>

@@ -7,6 +7,7 @@
   <title>Facebook Message Viewer</title>
   <!-- bootstrap -->
   <link rel="stylesheet" href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css">
   <link rel="stylesheet" href="/static/css/view.css" type="text/css" media="screen" title="no title" charset="utf-8">
 </head>
 <body>
@@ -33,7 +34,9 @@
       </div>
       <div class="container col-md-9">
         <h2>Filter:</h2>
-        <div class="filter"></div>
+        <span id="datepicker">
+          <span id="Since" class="filter">Since</span>
+        </span>
         <h2>Message List:</h2>
         <div id="messages"></div>
       </div>
@@ -68,7 +71,9 @@
   <!-- bootstrap -->
   <script type="text/javascript" charset="utf-8" src="/static/bower_components/jquery/dist/jquery.min.js"></script>
   <script type="text/javascript" charset="utf-8" src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-  <script type="text/javascript" charset="utf-8" src="static/bower_components/jquery-load-template/dist/jquery.loadTemplate.min.js"></script>
+  <script type="text/javascript" charset="utf-8" src="/static/bower_components/jquery-load-template/dist/jquery.loadTemplate.min.js"></script>
+  <script type="text/javascript" charset="utf-8" src="/static/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
+  <script type="text/javascript" charset="utf-8" src="/static/bower_components/moment/min/moment.min.js"></script>
   <!-- upload check js -->
   <script type="text/javascript" charset="utf-8" src="/static/js/upload.js"></script>
   <script type="text/javascript" charset="utf-8" src="/static/js/view.js"></script>

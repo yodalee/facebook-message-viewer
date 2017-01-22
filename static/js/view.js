@@ -28,6 +28,28 @@ function groupClick(obj) {
   renderMessageList();
 }
 
+function renderDatepicker() {
+  $("#datepicker").datepicker({
+    format: 'YYYY/DD/MM',
+    clearBtn: true,
+  });
+  $("#datepicker").on('changeDate', handleDatePicker);
+}
+
+function handleDatePicker(ev) {
+  $(this).datepicker('hide');
+  // set text
+  if (ev.date) {
+    console.log("select: " + ev.date);
+    startstr = moment(ev.date).format('YYYYMMDD');
+    $('#Since').text(startstr);
+  } else {
+    startstr = "";
+    $('#Since').text("Since");
+  }
+  renderMessageList();
+}
+
 function createMessage(data) {
   var time = $('<span>').addClass('time').html(data.time)
   var author = $('<span>').addClass('name').html(data.author)
@@ -41,6 +63,9 @@ function createMessage(data) {
 
 function renderMessageList() {
   var fetchstr = "/fetch?type=message&group=" + group + "&startdate=" + startstr + "&enddate=" + endstr
+  if (!group) {
+    return;
+  }
   fetch(fetchstr)
   .then((resp) => resp.json())
   .then((respjson) => {
@@ -56,5 +81,6 @@ function renderMessageList() {
 }
 
 window.onload = function() {
+  renderDatepicker();
   renderGroupList();
 }

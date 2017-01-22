@@ -12,6 +12,17 @@
   padding: 0 .2em;
 }
 
+.filter {
+  font-size: 14px;
+  background-color: #8444bf;
+  color: #fff;
+  padding: .8em;
+  border-radius: .4em;
+  margin: 1em;
+  width: 50%;
+  font-size: .8em;
+}
+
 .message {
   background: hsla(209, 100%, 41%, 1);
   color: #fff;

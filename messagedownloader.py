@@ -84,13 +84,13 @@ def MessageFetchHandler():
         messages = database.getMessage(userid, groupname, startstr, endstr)
 
         # prepare message
-        ret = [{"author": msg[0],
-            "time": msg[1],
-            "content": msg[2]} for msg in messages]
+        ret = [{"name": msg[0],
+            "nickname": msg[1],
+            "time": msg[2],
+            "content": msg[3]} for msg in messages]
         return json.dumps({"messages": ret})
 
     elif reqType == "friend":
-        userid = request.query.userid
         oldName = request.query.old
         newName = request.query.new
         database.updateFriend(userid, oldName, newName)

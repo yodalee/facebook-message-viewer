@@ -109,7 +109,7 @@ class dbSqlite3Test(unittest.TestCase):
 
         get = self.database.getMessage(self.userid, groupname)
         for i in range(len(msgbuf)):
-            self.assertEqual("message{}".format(i), get[len(msgbuf)-i-1][2])
+            self.assertEqual("message{}".format(i), get[len(msgbuf)-i-1][3])
 
     def tearDown(self):
         query = "DELETE FROM dbUser WHERE username = 'testuser'"

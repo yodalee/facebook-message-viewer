@@ -50,9 +50,19 @@ function handleDatePicker(ev) {
   renderMessageList();
 }
 
+function setFriendName(name, nickname) {
+  var newName = prompt("Please enter the new name of "+ nickname, nickname);
+  if (newName != null) {
+    var fetchstr = "/fetch?type=friend&old=" + name + "&new=" + newName
+    fetch(fetchstr).catch((err) => console.error(err));
+  }
+  renderMessageList();
+}
+
 function createMessage(data) {
   var time = $('<span>').addClass('time').html(data.time)
-  var author = $('<span>').addClass('name').html(data.author)
+  var author = $('<span>').addClass('name').html(data.nickname)
+  author.click(function() { setFriendName(data.name, data.nickname); })
   var meta = $('<div>').addClass('meta').append(time).append(author)
   var content = $('<p>').addClass('content').html(data.content)
   var message = $('<div>').addClass('message')

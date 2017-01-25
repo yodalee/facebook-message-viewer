@@ -88,9 +88,9 @@ def MessageFetchHandler():
         messages = database.getMessage(userid, groupname, startstr, endstr)
 
         # prepare message
-        ret = [{"author": friendmap.get(msg[1]),
-            "time": msg[2],
-            "content": msg[3]} for msg in messages]
+        ret = [{"author": msg[0],
+            "time": msg[1],
+            "content": msg[2]} for msg in messages]
         return json.dumps({"messages": ret})
 
     elif reqType == "friend":

@@ -84,7 +84,7 @@ class dbSqlite3Test(unittest.TestCase):
             for _ in range(n):
                 t = starttime + timedelta(
                     days = random.randrange(365*2*i, 365*2*(i+1)))
-                msgbuf.append((groupid, author, t, 0, self.strgen(500)))
+                msgbuf.append((self.userid, groupid, author, t, 0, self.strgen(500)))
         self.database.insertMessage(msgbuf)
 
         # test query
@@ -102,14 +102,14 @@ class dbSqlite3Test(unittest.TestCase):
         msgbuf = []
         for i in range(3):
             msgbuf.append((
-                groupid, author,
+                self.userid, groupid, author,
                 datetime(2008, 1, 1), i,
                 "message{}".format(i)))
         self.database.insertMessage(msgbuf)
 
         get = self.database.getMessage(self.userid, groupname)
         for i in range(len(msgbuf)):
-            self.assertEqual("message{}".format(i), get[len(msgbuf)-i-1][3])
+            self.assertEqual("message{}".format(i), get[len(msgbuf)-i-1][2])
 
     def tearDown(self):
         query = "DELETE FROM dbUser WHERE username = 'testuser'"

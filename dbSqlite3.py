@@ -121,10 +121,13 @@ class dbSqlite3(db.db):
             "WHERE members=?", (groupname,))
         groupid = self.cursor.fetchone()[0]
 
-        self.cursor.execute("SELECT id, author, time, content " \
-            "FROM dbMessage " \
-            "WHERE groupid=? AND time >= ? AND time < ?" \
-            "ORDER BY time, subtime DESC",
+        self.cursor.execute("SELECT " \
+            "f.newName, m.time, m.content " \
+            "FROM dbMessage AS m " \
+            "LEFT JOIN dbFriend AS f ON " \
+                "m.author = f.oldName AND m.userid = f.userid " \
+            "WHERE m.groupid=? AND m.time >= ? AND m.time < ?" \
+            "ORDER BY m.time, m.subtime DESC",
             (groupid, startdate, enddate, ))
 
         return self.cursor.fetchmany(30)

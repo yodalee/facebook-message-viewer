@@ -44,10 +44,7 @@ class dbSqlite3Test(unittest.TestCase):
         # insert friend and check exist
         for friend in friends:
             self.database.insertFriend(self.userid, friend, friend)
-        query = "SELECT originName, modifyName " \
-                "FROM dbFriend WHERE userid = %d" % self.userid
-        self.database.cursor.execute(query)
-        result = self.database.cursor.fetchall()
+        result = self.database.getFriend(self.userid)
         self.assertEqual(len(result), insertnum)
 
         # update
@@ -55,13 +52,11 @@ class dbSqlite3Test(unittest.TestCase):
         self.database.updateFriend(
             self.userid, oldName, newName)
 
-        query = "SELECT modifyName FROM dbFriend " \
-                "WHERE userid = ? AND originName = ?"
-        self.database.cursor.execute(query, (self.userid, oldName))
-        result = self.database.cursor.fetchone()
-
-        self.assertIsNotNone(result)
-        self.assertEqual(result[0], newName)
+        # get
+        result = self.database.getFriend(self.userid)
+        for ret in result:
+            if ret[0] == oldName:
+                self.assertEqual(ret[1], newName)
 
     def testGroup(self):
         insertnum = random.randrange(10, 20)
@@ -89,15 +84,15 @@ class dbSqlite3Test(unittest.TestCase):
             for _ in range(n):
                 t = starttime + timedelta(
                     days = random.randrange(365*2*i, 365*2*(i+1)))
-                msgbuf.append((groupid, author, t, 0, self.strgen(500)))
+                msgbuf.append((self.userid, groupid, author, t, 0, self.strgen(500)))
         self.database.insertMessage(msgbuf)
 
         # test query
-        get = self.database.getMessage(groupname, None, "20100101")
+        get = self.database.getMessage(self.userid, groupname, None, "20100101")
         self.assertEqual(len(get), insertnum[0])
-        get = self.database.getMessage(groupname, "20100101", "20120101")
+        get = self.database.getMessage(self.userid, groupname, "20100101", "20120101")
         self.assertEqual(len(get), insertnum[1])
-        get = self.database.getMessage(groupname, "20120101", None) 
+        get = self.database.getMessage(self.userid, groupname, "20120101", None)
         self.assertEqual(len(get), insertnum[2])
 
     def testSameTime(self):
@@ -107,14 +102,14 @@ class dbSqlite3Test(unittest.TestCase):
         msgbuf = []
         for i in range(3):
             msgbuf.append((
-                groupid, author,
+                self.userid, groupid, author,
                 datetime(2008, 1, 1), i,
                 "message{}".format(i)))
         self.database.insertMessage(msgbuf)
 
-        get = self.database.getMessage(groupname)
+        get = self.database.getMessage(self.userid, groupname)
         for i in range(len(msgbuf)):
-            self.assertEqual("message{}".format(i), get[len(msgbuf)-i-1][3])
+            self.assertEqual("message{}".format(i), get[len(msgbuf)-i-1][2])
 
     def tearDown(self):
         query = "DELETE FROM dbUser WHERE username = 'testuser'"

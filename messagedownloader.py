@@ -83,13 +83,21 @@ def MessageFetchHandler():
         groupname = request.query.group
         startstr = request.query.startdate
         endstr = request.query.enddate
-        messages = database.getMessage(groupname, startstr, endstr)
 
-        ret = [{"author": msg[1],
-            "time": msg[2],
-            "content": msg[3]} for msg in messages]
+        # fetch database
+        messages = database.getMessage(userid, groupname, startstr, endstr)
 
+        # prepare message
+        ret = [{"author": msg[0],
+            "time": msg[1],
+            "content": msg[2]} for msg in messages]
         return json.dumps({"messages": ret})
+
+    elif reqType == "friend":
+        userid = request.query.userid
+        oldName = request.query.old
+        newName = request.query.new
+        database.updateFriend(userid, oldName, newName)
 
 def setup_routing(app):
     app.route('/', 'GET', MessageViewHandler)

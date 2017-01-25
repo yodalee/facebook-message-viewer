@@ -23,9 +23,9 @@ class dbSqlite3(db.db):
         # dbFriend table to friend list, deal with id@facebook.com
         db.execute("CREATE TABLE IF NOT EXISTS dbFriend (" \
             "userid INTEGER REFERENCES dbUser(id)," \
-            "originName TEXT," \
-            "modifyName TEXT," \
-            "UNIQUE (userid, originName))")
+            "oldName TEXT," \
+            "newName TEXT," \
+            "UNIQUE (userid, oldName))")
 
         # dbGroup store the thread name in record file
         db.execute("CREATE TABLE IF NOT EXISTS dbGroup (" \
@@ -35,6 +35,7 @@ class dbSqlite3(db.db):
 
         # dbMessage each message become a entry
         db.execute("CREATE TABLE IF NOT EXISTS dbMessage (" \
+            "userid INTEGER REFERENCES dbUser(id)," \
             "groupid INTEGER REFERENCES dbGroup(id)," \
             "id INTEGER PRIMARY KEY," \
             "author TEXT," \
@@ -69,21 +70,21 @@ class dbSqlite3(db.db):
             "WHERE id == %d" % (userid))
         self.db.commit()
 
-    def insertFriend(self, userid, originName, modifyName):
+    def insertFriend(self, userid, oldName, newName):
         self.cursor.execute("INSERT or IGNORE INTO dbFriend " \
-                "(userid, originName, modifyName) " \
-                "VALUES (?, ?, ?)", (userid, originName, modifyName))
+                "(userid, oldName, newName) " \
+                "VALUES (?, ?, ?)", (userid, oldName, newName))
         self.db.commit()
 
-    def updateFriend(self, userid, originName, modifyName):
+    def updateFriend(self, userid, oldName, newName):
         self.cursor.execute("UPDATE dbFriend " \
-                "SET modifyName = ? " \
+                "SET newName = ? " \
                 "WHERE userid = ? " \
-                "AND originName = ?", (modifyName, userid, originName))
+                "AND oldName = ?", (newName, userid, oldName))
         self.db.commit()
 
     def getFriend(self, userid):
-        self.cursor.execute("SELECT recordName FROM dbFriend " \
+        self.cursor.execute("SELECT oldName, newName FROM dbFriend " \
                 "WHERE userid=?", (userid,))
         return self.cursor.fetchall()
 
@@ -105,11 +106,11 @@ class dbSqlite3(db.db):
         :msgbuf: array of tuple that contain: (groupid, author, msgtime, text)
         """
         self.cursor.executemany("INSERT OR IGNORE INTO dbMessage " \
-                "(groupid, author, time, subtime, content) " \
-                "VALUES (?,?,?,?,?)",
+                "(userid, groupid, author, time, subtime, content) " \
+                "VALUES (?,?,?,?,?,?)",
                 msgbuf)
 
-    def getMessage(self, groupname, startstr=None, endstr=None):
+    def getMessage(self, userid, groupname, startstr=None, endstr=None):
         startdate = datetime.datetime.strptime(startstr or "20010101", "%Y%m%d")
         if endstr:
             enddate = datetime.datetime.strptime(endstr, "%Y%m%d")
@@ -120,10 +121,13 @@ class dbSqlite3(db.db):
             "WHERE members=?", (groupname,))
         groupid = self.cursor.fetchone()[0]
 
-        self.cursor.execute("SELECT id, author, time, content " \
-            "FROM dbMessage " \
-            "WHERE groupid=? AND time >= ? AND time < ?" \
-            "ORDER BY time, subtime DESC",
+        self.cursor.execute("SELECT " \
+            "f.newName, m.time, m.content " \
+            "FROM dbMessage AS m " \
+            "LEFT JOIN dbFriend AS f ON " \
+                "m.author = f.oldName AND m.userid = f.userid " \
+            "WHERE m.groupid=? AND m.time >= ? AND m.time < ?" \
+            "ORDER BY m.time, m.subtime DESC",
             (groupid, startdate, enddate, ))
 
         return self.cursor.fetchmany(30)

@@ -96,9 +96,9 @@ def MessageFetchHandler():
 
     elif reqType == "friend":
         userid = request.query.userid
-        originName = request.query.origin
-        modifyName = request.query.modify
-        database.updateFriend(userid, originName, modifyName)
+        oldName = request.query.old
+        newName = request.query.new
+        database.updateFriend(userid, oldName, newName)
 
 def setup_routing(app):
     app.route('/', 'GET', MessageViewHandler)

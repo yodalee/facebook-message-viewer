@@ -23,9 +23,9 @@ class dbSqlite3(db.db):
         # dbFriend table to friend list, deal with id@facebook.com
         db.execute("CREATE TABLE IF NOT EXISTS dbFriend (" \
             "userid INTEGER REFERENCES dbUser(id)," \
-            "originName TEXT," \
-            "modifyName TEXT," \
-            "UNIQUE (userid, originName))")
+            "oldName TEXT," \
+            "newName TEXT," \
+            "UNIQUE (userid, oldName))")
 
         # dbGroup store the thread name in record file
         db.execute("CREATE TABLE IF NOT EXISTS dbGroup (" \
@@ -69,21 +69,21 @@ class dbSqlite3(db.db):
             "WHERE id == %d" % (userid))
         self.db.commit()
 
-    def insertFriend(self, userid, originName, modifyName):
+    def insertFriend(self, userid, oldName, newName):
         self.cursor.execute("INSERT or IGNORE INTO dbFriend " \
-                "(userid, originName, modifyName) " \
-                "VALUES (?, ?, ?)", (userid, originName, modifyName))
+                "(userid, oldName, newName) " \
+                "VALUES (?, ?, ?)", (userid, oldName, newName))
         self.db.commit()
 
-    def updateFriend(self, userid, originName, modifyName):
+    def updateFriend(self, userid, oldName, newName):
         self.cursor.execute("UPDATE dbFriend " \
-                "SET modifyName = ? " \
+                "SET newName = ? " \
                 "WHERE userid = ? " \
-                "AND originName = ?", (modifyName, userid, originName))
+                "AND oldName = ?", (newName, userid, oldName))
         self.db.commit()
 
     def getFriend(self, userid):
-        self.cursor.execute("SELECT originName, modifyName FROM dbFriend " \
+        self.cursor.execute("SELECT oldName, newName FROM dbFriend " \
                 "WHERE userid=?", (userid,))
         return self.cursor.fetchall()
 

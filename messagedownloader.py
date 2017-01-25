@@ -85,8 +85,7 @@ def MessageFetchHandler():
         endstr = request.query.enddate
 
         # fetch database
-        messages = database.getMessage(groupname, startstr, endstr)
-        friendmap = dict(database.getFriend(userid))
+        messages = database.getMessage(userid, groupname, startstr, endstr)
 
         # prepare message
         ret = [{"author": friendmap.get(msg[1]),

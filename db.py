@@ -39,5 +39,5 @@ class db():
         """
         raise NotImplementedError
 
-    def getMessage(self, groupname, startstr, endstr):
+    def getMessage(self, userid, groupname, startstr, endstr):
         raise NotImplementedError

@@ -152,7 +152,7 @@ class ParseHandler():
                     subtime = 0
                 text = (text.text or "").strip()
 
-                msgbuf[idx] = (groupid, author, msgtime, subtime, text)
+                msgbuf[idx] = (userid, groupid, author, msgtime, subtime, text)
 
                 idx = idx + 1
                 if idx == 512:

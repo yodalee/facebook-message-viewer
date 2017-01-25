@@ -88,11 +88,11 @@ class dbSqlite3Test(unittest.TestCase):
         self.database.insertMessage(msgbuf)
 
         # test query
-        get = self.database.getMessage(groupname, None, "20100101")
+        get = self.database.getMessage(self.userid, groupname, None, "20100101")
         self.assertEqual(len(get), insertnum[0])
-        get = self.database.getMessage(groupname, "20100101", "20120101")
+        get = self.database.getMessage(self.userid, groupname, "20100101", "20120101")
         self.assertEqual(len(get), insertnum[1])
-        get = self.database.getMessage(groupname, "20120101", None) 
+        get = self.database.getMessage(self.userid, groupname, "20120101", None)
         self.assertEqual(len(get), insertnum[2])
 
     def testSameTime(self):
@@ -107,7 +107,7 @@ class dbSqlite3Test(unittest.TestCase):
                 "message{}".format(i)))
         self.database.insertMessage(msgbuf)
 
-        get = self.database.getMessage(groupname)
+        get = self.database.getMessage(self.userid, groupname)
         for i in range(len(msgbuf)):
             self.assertEqual("message{}".format(i), get[len(msgbuf)-i-1][3])
 

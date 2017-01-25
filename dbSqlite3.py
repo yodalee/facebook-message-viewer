@@ -35,6 +35,7 @@ class dbSqlite3(db.db):
 
         # dbMessage each message become a entry
         db.execute("CREATE TABLE IF NOT EXISTS dbMessage (" \
+            "userid INTEGER REFERENCES dbUser(id)," \
             "groupid INTEGER REFERENCES dbGroup(id)," \
             "id INTEGER PRIMARY KEY," \
             "author TEXT," \
@@ -105,11 +106,11 @@ class dbSqlite3(db.db):
         :msgbuf: array of tuple that contain: (groupid, author, msgtime, text)
         """
         self.cursor.executemany("INSERT OR IGNORE INTO dbMessage " \
-                "(groupid, author, time, subtime, content) " \
-                "VALUES (?,?,?,?,?)",
+                "(userid, groupid, author, time, subtime, content) " \
+                "VALUES (?,?,?,?,?,?)",
                 msgbuf)
 
-    def getMessage(self, groupname, startstr=None, endstr=None):
+    def getMessage(self, userid, groupname, startstr=None, endstr=None):
         startdate = datetime.datetime.strptime(startstr or "20010101", "%Y%m%d")
         if endstr:
             enddate = datetime.datetime.strptime(endstr, "%Y%m%d")

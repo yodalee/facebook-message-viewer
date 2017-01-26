@@ -49,17 +49,13 @@ def MessageUploadFormHandler():
 
     redirect('/view')
 
-def MessageUploadForm():
-    template = JINJA_ENVIRONMENT.get_template('upload.html')
+def MessageViewHandler():
+    template = JINJA_ENVIRONMENT.get_template('view.html')
     template_values = {
         'upload_url': '/uploadhandler',
         'langs': REdict,
     }
     return template.render(template_values)
-
-def MessageViewHandler():
-    template = JINJA_ENVIRONMENT.get_template('view.html')
-    return template.render()
 
 def callback(path):
     return static_file(path, root='static')
@@ -88,13 +84,13 @@ def MessageFetchHandler():
         messages = database.getMessage(userid, groupname, startstr, endstr)
 
         # prepare message
-        ret = [{"author": msg[0],
-            "time": msg[1],
-            "content": msg[2]} for msg in messages]
+        ret = [{"name": msg[0],
+            "nickname": msg[1],
+            "time": msg[2],
+            "content": msg[3]} for msg in messages]
         return json.dumps({"messages": ret})
 
     elif reqType == "friend":
-        userid = request.query.userid
         oldName = request.query.old
         newName = request.query.new
         database.updateFriend(userid, oldName, newName)
@@ -103,7 +99,6 @@ def setup_routing(app):
     app.route('/', 'GET', MessageViewHandler)
     app.route('/view', 'GET', MessageViewHandler)
     app.route('/uploadhandler', 'POST', MessageUploadFormHandler)
-    app.route('/upload', 'GET', MessageUploadForm)
     app.route('/static/<path:path>', 'GET', callback)
     app.route('/fetch', 'GET', MessageFetchHandler)
 

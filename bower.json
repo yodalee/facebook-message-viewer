@@ -1,0 +1,26 @@
+{
+  "name": "facebook-message-viewer",
+  "homepage": "https://github.com/yodalee/message-downloader",
+  "authors": [
+    "yodalee <lc85301@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "^3.3.7",
+    "moment": "^2.17.1"
+  },
+  "devDependencies": {
+    "jquery.template": "^0.1.3",
+    "jquery-load-template": "^1.5.10",
+    "bootstrap-datepicker": "^1.6.4"
+  }
+}

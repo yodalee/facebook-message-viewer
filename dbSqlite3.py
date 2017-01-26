@@ -122,7 +122,7 @@ class dbSqlite3(db.db):
         groupid = self.cursor.fetchone()[0]
 
         self.cursor.execute("SELECT " \
-            "f.newName, m.time, m.content " \
+            "f.oldName, f.newName, m.time, m.content " \
             "FROM dbMessage AS m " \
             "LEFT JOIN dbFriend AS f ON " \
                 "m.author = f.oldName AND m.userid = f.userid " \

@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="/static/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css">
   <link rel="stylesheet" href="/static/css/view.css" type="text/css" media="screen" title="no title" charset="utf-8">
+  <link rel="stylesheet" href="/static/css/upload.css" type="text/css" media="screen" title="no title" charset="utf-8">
 </head>
 <body>
   <!-- Nav tabs -->
@@ -41,29 +42,98 @@
         <div id="messages"></div>
       </div>
     </div>
+
     <!-- upload -->
     <div role="tabpanel" class="tab-pane" id="upload">
-      <div class="container col-centered">
-        <h2>Upload steps:</h2>
-        <p class="text-center">
-        1. Click  at the top right of any Facebook page and select Settings</br>
-        2. Click Download a copy of your Facebook data below your General Account Settings</br>
-        3. Click Start My Archive</br>
-        </p>
-        <h2>Upload it here:</h2>
-        <form action="{{ upload_url }}" method="POST" enctype="multipart/form-data" onsubmit="return checkSubmit(this)">
-          Upload Message.htm: <input type="file" name="file"><br>
-          Choose Your Language:
-          <select name="lang" id="lang" onchange="checklang()">
-            <option value="">----</option>
-            {% for key,value in langs.items() %}
-              <option value="{{ key }}">{{ value['showName'] }}</option>
-            {% endfor %}
-          </select></br>
-          <input type="submit" id="submit" name="submit" value="Submit" disabled=true>
-        </form>
+      <div class="container">
+
+        <!-- step selection -->
+        <div class="stepwizard col-md-offset-3">
+          <div class="stepwizard-row setup-panel">
+            <div class="stepwizard-step">
+              <a href="#step-1" type="button" class="btn btn-primary btn-circle">1</a>
+              <p>Step 1</p>
+            </div>
+            <div class="stepwizard-step">
+              <a href="#step-2" type="button" class="btn btn-default btn-circle">2</a>
+              <p>Step 2</p>
+            </div>
+            <div class="stepwizard-step">
+              <a href="#step-3" type="button" class="btn btn-default btn-circle">3</a>
+              <p>Step 3</p>
+            </div>
+            <div class="stepwizard-step">
+              <a href="#step-4" type="button" class="btn btn-default btn-circle">4</a>
+              <p>Step 4</p>
+            </div>
+            <div class="stepwizard-step">
+              <a href="#step-5" type="button" class="btn btn-default btn-circle">5</a>
+              <p>Step 5</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- step description -->
+        <div class="row setup-content" id="step-1">
+          <div "col-xs-6 col-md-offset-3">
+            <div class="col-md-12">
+              <h2>Step 1</h2>
+              <p>Enter your Facebook settings pages</p>
+              <img src="/static/img/step1.png" class="img-rounded stepimg"/>
+            </div>
+          </div>
+        </div>
+        <div class="row setup-content" id="step-2">
+          <div "col-xs-6 col-md-offset-3">
+            <div class="col-md-12">
+              <h2>Step 2</h2>
+              <p>Press 'Download a Copy'</p>
+              <img src="/static/img/step2.png" class="img-rounded stepimg"/>
+            </div>
+          </div>
+        </div>
+        <div class="row setup-content" id="step-3">
+          <div "col-xs-6 col-md-offset-3">
+            <div class="col-md-12">
+              <h2>Step 3</h2>
+              <p>
+              1. Select your language to English</br>
+              2. Press 'Start My Archive', it may takes some time to archive.</p>
+              <img src="/static/img/step3.png" class="img-rounded stepimg" alt="Press 'Start My Archive'"/>
+            </div>
+          </div>
+        </div>
+        <div class="row setup-content" id="step-4">
+          <div "col-xs-6 col-md-offset-3">
+            <div class="col-md-12">
+              <h2>Step 4</h2>
+              <p>Extract the downloaded zip file, and find html/messages.htm</p>
+              <img src="/static/img/step4.png" class="img-rounded stepimg" alt="Extract messages.htm in downloaded file"/>
+            </div>
+          </div>
+        </div>
+        <div class="row setup-content" id="step-5">
+          <div "col-xs-6 col-md-offset-3">
+            <div class="col-md-12">
+              <h2>Step 5</h2>
+              <p>Upload the messages.htm here</p>
+              <form action="{{ upload_url }}" method="POST" enctype="multipart/form-data" onsubmit="return checkSubmit(this)">
+                <input type="file" class="form-control" name="file"></input><br>
+                Choose Your Language:
+                <select name="lang" id="lang" onchange="checklang()">
+                  <option value="">----</option>
+                  {% for key,value in langs.items() %}
+                    <option value="{{ key }}">{{ value['showName'] }}</option>
+                  {% endfor %}
+                </select></br>
+                <input type="submit" id="submit" name="submit" value="Submit" disabled=true>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+
     <!-- about -->
     <div role="tabpanel" class="tab-pane" id="about">
     </div>

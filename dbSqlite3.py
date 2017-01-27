@@ -31,7 +31,8 @@ class dbSqlite3(db.db):
         db.execute("CREATE TABLE IF NOT EXISTS dbGroup (" \
             "userid INTEGER REFERENCES dbUser(id)," \
             "id INTEGER PRIMARY KEY," \
-            "members TEXT)")
+            "gname TEXT," \
+            "gnickname TEXT)")
 
         # dbMessage each message become a entry
         db.execute("CREATE TABLE IF NOT EXISTS dbMessage (" \
@@ -88,15 +89,15 @@ class dbSqlite3(db.db):
                 "WHERE userid=?", (userid,))
         return self.cursor.fetchall()
 
-    def insertGroup(self, userid, groupname):
-        self.cursor.execute("INSERT INTO dbGroup (userid, members) " \
-                "VALUES (?, ?)", (userid, groupname))
+    def insertGroup(self, userid, gname, gnickname):
+        self.cursor.execute("INSERT INTO dbGroup (userid, gname, gnickname) " \
+                "VALUES (?, ?, ?)", (userid, gname, gnickname))
         groupid = self.cursor.lastrowid
         self.db.commit()
         return groupid
 
     def getGroup(self, userid):
-        self.cursor.execute('SELECT id, members FROM dbGroup " \
+        self.cursor.execute('SELECT id, gname, gnickname FROM dbGroup " \
                 "WHERE userid=?', (userid,))
         return self.cursor.fetchall()
 
@@ -110,7 +111,7 @@ class dbSqlite3(db.db):
                 "VALUES (?,?,?,?,?,?)",
                 msgbuf)
 
-    def getMessage(self, userid, groupname, startstr=None, endstr=None):
+    def getMessage(self, userid, gname, startstr=None, endstr=None):
         startdate = datetime.datetime.strptime(startstr or "20010101", "%Y%m%d")
         if endstr:
             enddate = datetime.datetime.strptime(endstr, "%Y%m%d")
@@ -118,7 +119,7 @@ class dbSqlite3(db.db):
             enddate = datetime.datetime.today()
 
         self.cursor.execute("SELECT rowid FROM dbGroup " \
-            "WHERE members=?", (groupname,))
+            "WHERE gname=?", (gname,))
         groupid = self.cursor.fetchone()[0]
 
         self.cursor.execute("SELECT " \

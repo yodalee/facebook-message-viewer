@@ -27,7 +27,7 @@ class db():
     def getFriend(self, userid):
         raise NotImplementedError
 
-    def insertGroup(self, userid, groupname):
+    def insertGroup(self, userid, gname):
         raise NotImplementedError
 
     def getGroup(self, userid):
@@ -39,5 +39,5 @@ class db():
         """
         raise NotImplementedError
 
-    def getMessage(self, userid, groupname, startstr, endstr):
+    def getMessage(self, userid, gname, startstr, endstr):
         raise NotImplementedError

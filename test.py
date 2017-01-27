@@ -64,18 +64,18 @@ class dbSqlite3Test(unittest.TestCase):
 
         # insert group and check exist
         for group in groups:
-            self.database.insertGroup(self.userid, group)
+            self.database.insertGroup(self.userid, group, group)
 
         result = self.database.getGroup(self.userid)
         self.assertIsNotNone(result)
         self.assertEqual(len(result), insertnum)
-        self.assertListEqual([i for (_, i) in result], groups)
+        self.assertListEqual([i for (_, i, _) in result], groups)
 
     def testMessage(self):
         # generate messages in three groups 2008 grp1 2010 grp2 2012 grp3
         insertnum = [random.randrange(10, 20) for _ in range(3)]
-        groupname = self.strgen()
-        groupid = self.database.insertGroup(self.userid, groupname)
+        gname = self.strgen()
+        groupid = self.database.insertGroup(self.userid, gname, gname)
         author = self.strgen()
         starttime = datetime(2008, 1, 1)
         msgbuf = []
@@ -88,16 +88,16 @@ class dbSqlite3Test(unittest.TestCase):
         self.database.insertMessage(msgbuf)
 
         # test query
-        get = self.database.getMessage(self.userid, groupname, None, "20100101")
+        get = self.database.getMessage(self.userid, gname, None, "20100101")
         self.assertEqual(len(get), insertnum[0])
-        get = self.database.getMessage(self.userid, groupname, "20100101", "20120101")
+        get = self.database.getMessage(self.userid, gname, "20100101", "20120101")
         self.assertEqual(len(get), insertnum[1])
-        get = self.database.getMessage(self.userid, groupname, "20120101", None)
+        get = self.database.getMessage(self.userid, gname, "20120101", None)
         self.assertEqual(len(get), insertnum[2])
 
     def testSameTime(self):
-        groupname = self.strgen()
-        groupid = self.database.insertGroup(self.userid, groupname)
+        gname = self.strgen()
+        groupid = self.database.insertGroup(self.userid, gname, gname)
         author = self.strgen()
         msgbuf = []
         for i in range(3):
@@ -107,7 +107,7 @@ class dbSqlite3Test(unittest.TestCase):
                 "message{}".format(i)))
         self.database.insertMessage(msgbuf)
 
-        get = self.database.getMessage(self.userid, groupname)
+        get = self.database.getMessage(self.userid, gname)
         for i in range(len(msgbuf)):
             self.assertEqual("message{}".format(i), get[len(msgbuf)-i-1][3])
 

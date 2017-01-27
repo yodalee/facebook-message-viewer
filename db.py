@@ -30,6 +30,9 @@ class db():
     def insertGroup(self, userid, gname):
         raise NotImplementedError
 
+    def updateGroup(self, userid, gname, nickname):
+        raise NotImplementedError
+
     def getGroup(self, userid):
         raise NotImplementedError
 

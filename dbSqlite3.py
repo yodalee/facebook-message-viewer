@@ -96,6 +96,13 @@ class dbSqlite3(db.db):
         self.db.commit()
         return groupid
 
+    def updateGroup(self, userid, gname, gnickname):
+        self.cursor.execute("UPDATE dbGroup " \
+                "SET gnickname = ? " \
+                "WHERE userid = ? " \
+                "AND gname = ?", (gnickname, userid, gname))
+        self.db.commit()
+
     def getGroup(self, userid):
         self.cursor.execute('SELECT id, gname, gnickname FROM dbGroup " \
                 "WHERE userid=?', (userid,))

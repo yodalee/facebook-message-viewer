@@ -71,6 +71,17 @@ class dbSqlite3Test(unittest.TestCase):
         self.assertEqual(len(result), insertnum)
         self.assertListEqual([i for (_, i, _) in result], groups)
 
+        # update
+        gname, gnickname = random.choice(groups), self.strgen()
+        self.database.updateGroup(
+            self.userid, gname, gnickname)
+
+        # get
+        result = self.database.getGroup(self.userid)
+        for ret in result:
+            if ret[1] == gname:
+                self.assertEqual(ret[2], gnickname)
+
     def testMessage(self):
         # generate messages in three groups 2008 grp1 2010 grp2 2012 grp3
         insertnum = [random.randrange(10, 20) for _ in range(3)]

@@ -71,7 +71,7 @@ def MessageFetchHandler():
         pass
     elif reqType == "groups":
         groupquery = database.getGroup(userid)
-        groups = [i[1] for i in groupquery]
+        groups = [{"name": grp[1], "nickname": grp[2]} for grp in groupquery]
         print("Get {} groups".format(len(groups)))
         return json.dumps({"groups": groups})
 
@@ -93,7 +93,23 @@ def MessageFetchHandler():
     elif reqType == "friend":
         fname = request.query.fname
         fnickname = request.query.fnickname
+        oldfnick = None
+
+        # find old nickname
+        friendquery = database.getFriend(userid)
+        for fitem in friendquery:
+            if fname == fitem[0]:
+                oldfnick = fitem[1]
+                break;
+
+        # update friend's nickname
         database.updateFriend(userid, fname, fnickname)
+
+        # update group that contain fname
+        groupquery = database.getGroup(userid)
+        for g in filter(lambda x: fname in x[1], groupquery):
+            gname, gnickname = g[1], g[2].replace(oldfnick, fnickname)
+            database.updateGroup(userid, gname, gnickname)
 
 def setup_routing(app):
     app.route('/', 'GET', MessageViewHandler)

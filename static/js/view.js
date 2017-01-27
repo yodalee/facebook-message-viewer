@@ -2,27 +2,29 @@ var group = "";
 var startstr = "";
 var endstr = "";
 
+function createGroup(data) {
+  var div = $('<div>').addClass('group').text(data.nickname)
+  div.click(function() { groupClick(data.name); })
+  return div
+}
+
 function renderGroupList() {
   var fetchstr = "/fetch?type=groups";
   fetch(fetchstr)
   .then((resp) => resp.json())
   .then((respjson) => {
-    var groupdiv = document.getElementById("groups");
+    var groupdiv = $('#groups');
+    groupdiv.empty();
     var data = respjson.groups;
     for (var i = 0, len = data.length; i < len; i++) {
-      var div = document.createElement('div');
-      div.className = "group"
-      div.innerHTML = data[i];
-      div.onclick = function() { groupClick(this); }
-      groupdiv.appendChild(div);
+      groupdiv.append(createGroup(data[i]));
     }
   }).catch((err) => {
     console.error(err)
   })
 }
 
-function groupClick(obj) {
-  groupname = obj.innerText
+function groupClick(groupname) {
   console.log("select: " + groupname);
   group = groupname;
   renderMessageList();
@@ -56,6 +58,7 @@ function setFriendName(name, nickname) {
     var fetchstr = "/fetch?type=friend&fname=" + name + "&fnickname=" + newName
     fetch(fetchstr).catch((err) => console.error(err));
   }
+  renderGroupList();
   renderMessageList();
 }
 

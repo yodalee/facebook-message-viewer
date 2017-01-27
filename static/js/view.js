@@ -53,7 +53,7 @@ function handleDatePicker(ev) {
 function setFriendName(name, nickname) {
   var newName = prompt("Please enter the new name of "+ nickname, nickname);
   if (newName != null) {
-    var fetchstr = "/fetch?type=friend&old=" + name + "&new=" + newName
+    var fetchstr = "/fetch?type=friend&fname=" + name + "&fnickname=" + newName
     fetch(fetchstr).catch((err) => console.error(err));
   }
   renderMessageList();

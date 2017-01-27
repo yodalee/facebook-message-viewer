@@ -18,10 +18,10 @@ class db():
     def updateUser(self, userid):
         raise NotImplementedError
 
-    def insertFriend(self, userid, oldName, newName):
+    def insertFriend(self, userid, fname, nickname):
         raise NotImplementedError
 
-    def updateFriend(self, userid, oldName, newName):
+    def updateFriend(self, userid, fname, nickname):
         raise NotImplementedError
 
     def getFriend(self, userid):

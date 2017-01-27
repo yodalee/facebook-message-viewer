@@ -48,15 +48,15 @@ class dbSqlite3Test(unittest.TestCase):
         self.assertEqual(len(result), insertnum)
 
         # update
-        oldName, newName = random.choice(friends), self.strgen()
+        fname, fnickname = random.choice(friends), self.strgen()
         self.database.updateFriend(
-            self.userid, oldName, newName)
+            self.userid, fname, fnickname)
 
         # get
         result = self.database.getFriend(self.userid)
         for ret in result:
-            if ret[0] == oldName:
-                self.assertEqual(ret[1], newName)
+            if ret[0] == fname:
+                self.assertEqual(ret[1], fnickname)
 
     def testGroup(self):
         insertnum = random.randrange(10, 20)

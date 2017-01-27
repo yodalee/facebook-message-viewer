@@ -23,9 +23,9 @@ class dbSqlite3(db.db):
         # dbFriend table to friend list, deal with id@facebook.com
         db.execute("CREATE TABLE IF NOT EXISTS dbFriend (" \
             "userid INTEGER REFERENCES dbUser(id)," \
-            "oldName TEXT," \
-            "newName TEXT," \
-            "UNIQUE (userid, oldName))")
+            "fname TEXT," \
+            "fnickname TEXT," \
+            "UNIQUE (userid, fname))")
 
         # dbGroup store the thread name in record file
         db.execute("CREATE TABLE IF NOT EXISTS dbGroup (" \
@@ -70,21 +70,21 @@ class dbSqlite3(db.db):
             "WHERE id == %d" % (userid))
         self.db.commit()
 
-    def insertFriend(self, userid, oldName, newName):
+    def insertFriend(self, userid, fname, fnickname):
         self.cursor.execute("INSERT or IGNORE INTO dbFriend " \
-                "(userid, oldName, newName) " \
-                "VALUES (?, ?, ?)", (userid, oldName, newName))
+                "(userid, fname, fnickname) " \
+                "VALUES (?, ?, ?)", (userid, fname, fnickname))
         self.db.commit()
 
-    def updateFriend(self, userid, oldName, newName):
+    def updateFriend(self, userid, fname, fnickname):
         self.cursor.execute("UPDATE dbFriend " \
-                "SET newName = ? " \
+                "SET fnickname = ? " \
                 "WHERE userid = ? " \
-                "AND oldName = ?", (newName, userid, oldName))
+                "AND fname = ?", (fnickname, userid, fname))
         self.db.commit()
 
     def getFriend(self, userid):
-        self.cursor.execute("SELECT oldName, newName FROM dbFriend " \
+        self.cursor.execute("SELECT fname, fnickname FROM dbFriend " \
                 "WHERE userid=?", (userid,))
         return self.cursor.fetchall()
 
@@ -122,10 +122,10 @@ class dbSqlite3(db.db):
         groupid = self.cursor.fetchone()[0]
 
         self.cursor.execute("SELECT " \
-            "f.oldName, f.newName, m.time, m.content " \
+            "f.fname, f.fnickname, m.time, m.content " \
             "FROM dbMessage AS m " \
             "LEFT JOIN dbFriend AS f ON " \
-                "m.author = f.oldName AND m.userid = f.userid " \
+                "m.author = f.fname AND m.userid = f.userid " \
             "WHERE m.groupid=? AND m.time >= ? AND m.time < ?" \
             "ORDER BY m.time, m.subtime DESC",
             (groupid, startdate, enddate, ))

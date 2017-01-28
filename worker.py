@@ -108,8 +108,8 @@ class ParseHandler():
         # prepare group
         existGroup = database.getGroup(userid)
         grouplist = dict()
-        for (groupid, members) in existGroup:
-            grouplist[members] = groupid
+        for (groupid, gname, _) in existGroup:
+            grouplist[gname] = groupid
         groupnum = len(threads)
 
         # variable
@@ -123,16 +123,16 @@ class ParseHandler():
         starttime = time.time()
 
         for thread in threads:
-            members = thread.text.strip()
+            gname = thread.text.strip()
 
-            if members in grouplist:
-                groupid = grouplist[members]
+            if gname in grouplist:
+                groupid = grouplist[gname]
             else:
-                groupid = database.insertGroup(userid, members)
-                grouplist[members] = groupid
+                groupid = database.insertGroup(userid, gname, gname)
+                grouplist[gname] = groupid
 
             print("Process id {}: {}, progress {}/{}".format(
-                groupid, members, processed, groupnum))
+                groupid, gname, processed, groupnum))
 
             authorlist = self.xpathAuthor(thread)
             timelist = self.xpathTime(thread)

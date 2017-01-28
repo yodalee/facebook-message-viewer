@@ -90,6 +90,13 @@ def MessageFetchHandler():
             "content": msg[3]} for msg in messages]
         return json.dumps({"messages": ret})
 
+    elif reqType == "date":
+        groupname = request.query.groups
+        dates = database.getDate(userid, groupname)
+        dates = list(set(map(lambda x: x[0].split()[0], dates)))
+
+        return json.dumps({"dates": dates})
+
     elif reqType == "friend":
         fname = request.query.fname
         fnickname = request.query.fnickname

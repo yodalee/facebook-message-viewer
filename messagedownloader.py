@@ -92,10 +92,12 @@ def MessageFetchHandler():
 
     elif reqType == "date":
         groupname = request.query.groups
-        dates = database.getDate(userid, groupname)
-        dates = list(set(map(lambda x: x[0].split()[0], dates)))
+        dates = map(lambda x: x[0].split()[0],
+            database.getDate(userid, groupname))
+        seen = set()
+        uniqDates = [x for x in dates if x not in seen and not seen.add(x)]
 
-        return json.dumps({"dates": dates})
+        return json.dumps({"dates": uniqDates})
 
     elif reqType == "friend":
         fname = request.query.fname

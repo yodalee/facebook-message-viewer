@@ -1,4 +1,6 @@
 var group = "";
+var groups = [];
+var datelist = [];
 var startstr = "";
 var endstr = "";
 
@@ -15,9 +17,9 @@ function renderGroupList() {
   .then((respjson) => {
     var groupdiv = $('#groups');
     groupdiv.empty();
-    var data = respjson.groups;
-    for (var i = 0, len = data.length; i < len; i++) {
-      groupdiv.append(createGroup(data[i]));
+    groups = respjson.groups;
+    for (var i = 0, len = groups.length; i < len; i++) {
+      groupdiv.append(createGroup(groups[i]));
     }
   }).catch((err) => {
     console.error(err)
@@ -27,15 +29,21 @@ function renderGroupList() {
 function groupClick(groupname) {
   console.log("select: " + groupname);
   group = groupname;
+  renderDatepicker();
   renderMessageList();
 }
 
 function renderDatepicker() {
-  $("#datepicker").datepicker({
-    format: 'YYYY/DD/MM',
-    clearBtn: true,
-  });
-  $("#datepicker").on('changeDate', handleDatePicker);
+  var fetchstr = "/fetch?type=date&groups=" + group
+  fetch(fetchstr)
+  .then((resp) => resp.json())
+  .then((respjson) => {
+    datelist = respjson.dates;
+    $("#datepicker").datepicker('setStartDate', new Date(datelist[0]))
+    $("#datepicker").datepicker('setEndDate', new Date(datelist[datelist.length-1]))
+  }).catch((err) => {
+    console.error(err)
+  })
 }
 
 function handleDatePicker(ev) {
@@ -93,7 +101,19 @@ function renderMessageList() {
   })
 }
 
+function initDatepicker() {
+  $("#datepicker").datepicker({
+    format: 'YYYY/DD/MM',
+    clearBtn: true,
+    beforeShowDay: function(date) {
+      datestr = moment(date).format('YYYY-MM-DD');
+      return datelist.some(x => x ==datestr);
+    },
+  });
+  $("#datepicker").on('changeDate', handleDatePicker);
+}
+
 window.onload = function() {
-  renderDatepicker();
   renderGroupList();
+  initDatepicker();
 }

@@ -122,6 +122,22 @@ class dbSqlite3Test(unittest.TestCase):
         for i in range(len(msgbuf)):
             self.assertEqual("message{}".format(i), get[len(msgbuf)-i-1][3])
 
+    def testGetDate(self):
+        gname = self.strgen()
+        groupid = self.database.insertGroup(self.userid, gname, gname)
+        author = self.strgen()
+        msgbuf = []
+        for i in range(3):
+            msgbuf.append((
+                self.userid, groupid, author,
+                datetime(2008, 1, 1), i,
+                "message{}".format(i)))
+        self.database.insertMessage(msgbuf)
+
+        get = self.database.getDate(self.userid, gname)
+        self.assertEqual(len(get), 1)
+        self.assertEqual(get[0][0].split()[0], "2008-01-01")
+
     def tearDown(self):
         query = "DELETE FROM dbUser WHERE username = 'testuser'"
         self.database.db.execute(query)

@@ -44,3 +44,6 @@ class db():
 
     def getMessage(self, userid, gname, startstr, endstr):
         raise NotImplementedError
+
+    def getDate(self, userid, gname):
+        raise NotImplementedError

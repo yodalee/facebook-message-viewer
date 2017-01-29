@@ -139,3 +139,12 @@ class dbSqlite3(db.db):
             (groupid, startdate, enddate, ))
 
         return self.cursor.fetchmany(30)
+
+    def getDate(self, userid, gname):
+        self.cursor.execute("SELECT rowid FROM dbGroup " \
+            "WHERE gname=?", (gname,))
+        groupid = self.cursor.fetchone()[0]
+
+        self.cursor.execute("SELECT time " \
+            "FROM dbMessage WHERE groupid=? GROUP BY time", (groupid,))
+        return self.cursor.fetchall()

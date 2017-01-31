@@ -38,8 +38,10 @@ ga('send', 'pageview');
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
-        <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
-        <li><a href="#">Link</a></li>
+        <li class="active"><a href="#">Home<span class="sr-only">(current)</span></a></li>
+        <li><a href="#Download">Download</a></li>
+        <li><a href="#Feature">Feature</a></li>
+        <li><a href="#QA">Q&A</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
       </ul>
@@ -48,20 +50,21 @@ ga('send', 'pageview');
 </nav>
 
 <div class="container">
+  <div class="col-md-10 col-md-offset-1">
     <!-- header -->
     <div class="hero-unit">
       <center>
-        <img src="./icons/qclean.png" width="200"/>
-        <h2>QCLean<br/>Remove Facebook Ads, Suggested Pages & Posts</h2>
-        <p>A browser extension/add-on that removing ads, suggested pages and posts on facebook news feed for Chrome/Firefox/Safari/Opera/IE users.</p>
-        <p>一款爲 Chrome/Firefox/Safari/Opera/IE 使用者精工打造的移除 Facebook 廣告、建議貼文與推薦粉絲專頁的瀏覽器附加元件</p>
-        <hr />
+        <h1>Facebook Message Viewer</h1>
+        <h3>View Your Facebook History Message in a More Convenient Way</h3>
+        </br>
         <p>
         <a href="#download" class="btn btn-success btn-large">Download</a>
         <a href="#features" class="btn btn-primary btn-large">Features</a> 
+        <a href="#QA" class="btn btn-warning btn-large">Q&A</a> 
         </p>
       </center>
     </div>
+    <hr />
 
     <!-- download page -->
     <h1 id="download">Download</h1>
@@ -75,8 +78,10 @@ ga('send', 'pageview');
     <h1 id="features">Features</h1>
 
     <div class="featurette">
-      <img width="512" class="featurette-image pull-left" src="./img/features/suggested_post_page_remove.png">
-      <h3>Remove Suggested Pages & Posts<br/><span class="muted">移除「推薦粉絲專頁」以及「建議貼文」。</span></h3>
+      <img width="512" class="featurette-image pull-right" src="./img/view-with-calendar.png">
+      <h3>View Your Messages with Calendar<br/>
+        <span class="muted">Find you message in a specific day is quite hard in Facebook. With calendar filter in Facebook Message Viewer, you can watch your messages in any days.</span>
+      </h3>
       <p>
       </p>
     </div>
@@ -84,26 +89,40 @@ ga('send', 'pageview');
 
     <div class="featurette">
       <img width="256" class="featurette-image pull-right" src="./img/github-logo-256.png">
-      <h3>Open Source<br/><span class="muted">開放原始碼</span></h3>
+      <h3>Open Source<br/>
+      <span class="muted">All the source of Facebook-Message-Viewer is open on Github. If you find any bugs need to fix or any features you want, contribution is always welcome</span></h3>
       <p>
-      <a href="https://github.com/qcl/QCLean" class="btn btn-info btn-large">View Source Code on Github &raquo;</a> 
+      <a target="_blank" href="https://github.com/yodalee/message-downloader" class="btn btn-success btn-large">View Source Code on Github</a> 
       </p>
     </div>
     <hr class="featurette-divider">
 
-    <h1 id="Q&A">Q&A</h1>
-    <div class="featurette">
-      <button data-toggle="collapse" data-target="#demo">Collapsible</button>
-      <div id="demo" class="collapse">
-      </div>
+    <!-- Q&A page -->
+    <h1 id="QA">Q&A</h1>
+    <h3>There are some common questions listed below. </h3>
+    <button class="btn btn-block" data-toggle="collapse" data-target="#demo">
+      Question: Why 
+    </button>
+    <div id="demo" class="collapse">
     </div>
+
+    </br>
+    <h3>If you cannot find your question, please file an issue:</h3>
+    <a target="_blank" href="https://github.com/yodalee/message-downloader/issues">
+    <button class="btn btn-primary">File an issue</button>
+    </a>
+
     <hr class="featurette-divider">
 
+    <!-- footer -->
     <footer>
       <p class="pull-right"><a href="#">Back to top</a></p>
-      <p>&copy; 2014 qcl.tw &middot; <a href="http://blog.qcl.tw/">Blog</a></p>
+      <p>&copy; 2017 yodalee &middot;
+        <a href="http://yodalee.blogspot.tw/">Blog</a>&middot;
+        <a href="https://github.com/yodalee">Github</a>
+      </p>
     </footer>
-
+  </div>
 </div>
 
 <script src="./js/jquery.min.js" ></script>

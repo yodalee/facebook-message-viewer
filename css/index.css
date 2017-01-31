@@ -1,3 +1,7 @@
+.muted {
+  color: gray;
+}
+
 .featurette-divider {
   margin: 80px 0; /* <hr> between each */
 }

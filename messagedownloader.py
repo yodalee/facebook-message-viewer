@@ -78,9 +78,10 @@ def MessageFetchHandler():
         groupname = request.query.group
         startstr = request.query.startdate
         endstr = request.query.enddate
+        offset = int(request.query.offset or 0)
 
         # fetch database
-        messages = database.getMessage(userid, groupname, startstr, endstr)
+        messages = database.getMessage(userid, groupname, startstr, endstr, offset)
 
         # prepare message
         ret = [{"name": msg[0],

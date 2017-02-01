@@ -71,10 +71,10 @@ class dbSqlite3(db.db):
             "WHERE id == %d" % (userid))
         self.db.commit()
 
-    def insertFriend(self, userid, fname, fnickname):
-        self.cursor.execute("INSERT or IGNORE INTO dbFriend " \
+    def insertFriend(self, friendbuf):
+        self.cursor.executemany("INSERT or IGNORE INTO dbFriend " \
                 "(userid, fname, fnickname) " \
-                "VALUES (?, ?, ?)", (userid, fname, fnickname))
+                "VALUES (?, ?, ?)", (friendbuf))
         self.db.commit()
 
     def updateFriend(self, userid, fname, fnickname):
@@ -118,7 +118,7 @@ class dbSqlite3(db.db):
                 "VALUES (?,?,?,?,?,?)",
                 msgbuf)
 
-    def getMessage(self, userid, gname, startstr=None, endstr=None):
+    def getMessage(self, userid, gname, startstr=None, endstr=None, offset=0):
         startdate = datetime.datetime.strptime(startstr or "20010101", "%Y%m%d")
         if endstr:
             enddate = datetime.datetime.strptime(endstr, "%Y%m%d")
@@ -134,11 +134,12 @@ class dbSqlite3(db.db):
             "FROM dbMessage AS m " \
             "LEFT JOIN dbFriend AS f ON " \
                 "m.author = f.fname AND m.userid = f.userid " \
-            "WHERE m.groupid=? AND m.time >= ? AND m.time < ?" \
-            "ORDER BY m.time, m.subtime DESC",
-            (groupid, startdate, enddate, ))
+            "WHERE m.groupid=? AND m.time >= ? AND m.time < ? " \
+            "ORDER BY m.time, m.subtime DESC " \
+            "LIMIT 300 OFFSET ?",
+            (groupid, startdate, enddate, offset, ))
 
-        return self.cursor.fetchmany(30)
+        return self.cursor.fetchall()
 
     def getDate(self, userid, gname):
         self.cursor.execute("SELECT rowid FROM dbGroup " \

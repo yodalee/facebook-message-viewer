@@ -24,8 +24,8 @@ class ParseHandlerTest(unittest.TestCase):
         self.assertEqual(username, "葉闆")
 
     def test_parseUserid(self):
-        username = self.parser.parseUserid()
-        self.assertEqual(username, "100000000000000")
+        username = self.parser.parseUserid(-1)
+        self.assertEqual(username, "100000000000000@facebook.com")
 
 class dbSqlite3Test(unittest.TestCase):
     def setUp(self):
@@ -40,10 +40,10 @@ class dbSqlite3Test(unittest.TestCase):
     def testFriend(self):
         insertnum = random.randrange(10, 20)
         friends = [self.strgen() for _ in range(insertnum)]
+        friendlist = [(self.userid, friend, friend) for friend in friends]
 
         # insert friend and check exist
-        for friend in friends:
-            self.database.insertFriend(self.userid, friend, friend)
+        self.database.insertFriend(friendlist)
         result = self.database.getFriend(self.userid)
         self.assertEqual(len(result), insertnum)
 

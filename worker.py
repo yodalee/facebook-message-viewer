@@ -9,6 +9,7 @@ from config import REdict
 from dbSqlite3 import dbSqlite3
 
 database = dbSqlite3()
+logging.basicConfig(level=logging.INFO, filename="log.txt")
 
 class ParseHandler():
     def __init__(self):
@@ -27,9 +28,9 @@ class ParseHandler():
         self.lang = REdict[lang]
 
     def isValid(self, file_content):
-        """isLangValid: check uploaded file_content is valid
-        """
-        logging.info("initial parse check: {}".format(self.lang["showName"]))
+        """isLangValid: check uploaded file_content is valid"""
+
+        logging.info("{} initial parse check: {}".format(time.time(), self.lang["showName"]))
 
         root = etree.parse(BytesIO(file_content), self.parser)
 
@@ -56,71 +57,81 @@ class ParseHandler():
 
     def parseUsername(self):
         username = self.xpathUser(self.content)[0].strip()
-        logging.info("Parse username: {}".format(username))
+        logging.info("{}, Parse username: {}".format(time.time(), username))
         return username
 
-    def parseUserid(self):
+    def parseUserid(self, userid):
+        """
+            parseUserid: parse through all group members
+            find highest appearance rate of id@facebook.com
+            which should be user's facebook id
+        """
         username = self.xpathUser(self.content)[0].strip()
         threads = self.xpathThread(self.content)
         ll = []
+
+        # build friend list
         for thread in threads:
             members = list(map(
-                lambda x: x.strip().rstrip('@facebook.com'),
-                thread.text.split(',')))
+                lambda x: x.strip(), thread.text.split(',')))
 
             if username not in members:
                 ll.extend(members)
 
         userfbid = max(ll or [0], key=ll.count)
-        logging.info("Parse userfbid: {}".format(userfbid))
+
+        # update database
+        database.updateFriend(userid, userfbid, username)
+        groupquery = database.getGroup(userid)
+        for g in filter(lambda x: userfbid in x[1], groupquery):
+            gname, gnickname = g[1], g[2].replace(userfbid, username)
+            database.updateGroup(userid, gname, gnickname)
+
+        logging.info("{}, Parse userfbid: {}".format(
+            time.time(), userfbid.rstrip("@facebook.com")))
         return userfbid
 
-    def parseGroup(self, threads, userid):
-        """parseGroup: parse through all group and build a table
-           to all username in this message file
+    def parseFriend(self, userid):
         """
+            parseFriend: parse through all group and build a table
+            to all username in this message file
+        """
+        threads = self.xpathThread(self.content)
+
         # build dictionary
         friendset = set()
-        idx = 0
         for thread in threads:
             friendset |= set(map(lambda x: x.strip(), thread.text.split(',')))
 
-        logging.info("Parse all friend, got {} unique friend name".format(
-            len(friendset)))
+        logging.info("{}, Parse all friend, got {} unique friend name".format(
+            time.time(), len(friendset)))
 
-        # store friendlist
+        # store friendlist, rstrip @facebook.com here
+        friendlist = [(userid, name, name.rstrip('@facebook.com')) for name in friendset]
+        database.insertFriend(friendlist)
+
         return friendset
 
-    def parse(self, userid):
-        logging.info("user_id: {}, lang: {}".format(userid, self.lang["showName"]))
-        starttime = time.time()
+    def parseMessage(self, userid):
+        """parseMessage: parse message and store in message database"""
 
         threads = self.xpathThread(self.content)
 
-        # insert userid
-        userfbid = self.parseUserid()
-
-        # built friend table
-        friendset = self.parseGroup(threads, userid)
-        for name in friendset:
-            database.insertFriend(userid, name, name)
-
-        # prepare group
-        existGroup = database.getGroup(userid)
-        grouplist = dict()
-        for (groupid, gname, _) in existGroup:
-            grouplist[gname] = groupid
-        groupnum = len(threads)
-
         # variable
+        groupnum = len(threads)
         processed = 0
         idx = 0
         msgbuf = [None] * 512
         subtime = 0
         prevtime = datetime(2001, 1, 1)
 
-        print("Process message start")
-        starttime = time.time()
+        # prepare group
+        existGroup = database.getGroup(userid)
+        grouplist = dict()
+        for (groupid, gname, _) in existGroup:
+            grouplist[gname] = groupid
+
+        logging.info("{}, Parse message start".format(time.time()))
 
         for thread in threads:
             gname = thread.text.strip()
@@ -131,7 +142,7 @@ class ParseHandler():
                 groupid = database.insertGroup(userid, gname, gname)
                 grouplist[gname] = groupid
 
-            print("Process id {}: {}, progress {}/{}".format(
+            logging.info("Process id {}: {}, process {}/{}".format(
                 groupid, gname, processed, groupnum))
 
             authorlist = self.xpathAuthor(thread)
@@ -164,9 +175,23 @@ class ParseHandler():
         if idx != 0:
             database.insertMessage(msgbuf[:idx])
 
+    def parse(self, userid):
+        starttime = time.time()
+        logging.info("{}, process start user_id: {}, lang: {}".format(
+            starttime, userid, self.lang["showName"]))
+
+        # built friend table
+        self.parseFriend(userid)
+
+        # process message
+        self.parseMessage(userid)
+
+        # parse user fb id and set nickname
+        self.parseUserid(userid)
+
         # process end
         endtime = time.time()
-        print("Process end, time consumed: {}".format(endtime-starttime))
+        logging.info("{} Process end, time consumed: {}".format(endtime, endtime-starttime))
 
         # update user info
         database.updateUser(userid)

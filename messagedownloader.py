@@ -27,14 +27,13 @@ database = dbSqlite3()
 parser = ParseHandler()
 
 def MessageUploadFormHandler():
-    lang = request.forms.get('lang')
     data = request.files.get('file')
     filename = data.filename
     file_content = data.file.read()
 
-    print("lang: {}, filename: {}".format(lang, filename))
+    print("filename: {}".format(filename))
 
-    parser.setLang(lang)
+    parser.setLang("en")
     if not parser.isValid(file_content):
         print("The uploaded file not valid")
         redirect('/view')
@@ -79,9 +78,10 @@ def MessageFetchHandler():
         groupname = request.query.group
         startstr = request.query.startdate
         endstr = request.query.enddate
+        offset = int(request.query.offset or 0)
 
         # fetch database
-        messages = database.getMessage(userid, groupname, startstr, endstr)
+        messages = database.getMessage(userid, groupname, startstr, endstr, offset)
 
         # prepare message
         ret = [{"name": msg[0],

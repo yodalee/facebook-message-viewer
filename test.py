@@ -24,8 +24,8 @@ class ParseHandlerTest(unittest.TestCase):
         self.assertEqual(username, "葉闆")
 
     def test_parseUserid(self):
-        username = self.parser.parseUserid()
-        self.assertEqual(username, "100000000000000")
+        username = self.parser.parseUserid(-1)
+        self.assertEqual(username, "100000000000000@facebook.com")
 
 class dbSqlite3Test(unittest.TestCase):
     def setUp(self):

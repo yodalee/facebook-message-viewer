@@ -1,5 +1,19 @@
+#icon {
+  margin-top: 10%;
+}
+
 .muted {
   color: gray;
+}
+
+.question {
+  text-align: left;
+  margin-top: 10px;
+  font-size: 18px;
+}
+
+.answer {
+  font-size: 14px;
 }
 
 .featurette-divider {

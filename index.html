@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Facebook Message Viewer: View your message in a more convenient way" />
     <meta name="author" content="yodalee" />
+    <meta property="og:image" content="http://github.com/yodalee/facebook-message-viewer/img/fb-msg-viewer.png">
     <script>
 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -15,6 +16,7 @@ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 ga('create', 'UA-77945119-3', 'auto');
 ga('send', 'pageview');
     </script>
+    <link rel="shortcut icon" href="./img/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="./css/bootstrap-responsive.min.css" />
     <link rel="stylesheet" href="./css/bootstrap.min.css" />
     <link rel="stylesheet" href="./css/index.css">
@@ -54,9 +56,30 @@ ga('send', 'pageview');
     <!-- header -->
     <div class="hero-unit">
       <center>
+        <img src="./img/fb-msg-viewer.png" width="200" id="icon">
         <h1>Facebook Message Viewer</h1>
         <h3>View Your Facebook History Message in a More Convenient Way</h3>
         </br>
+        <p><big>
+        A simple to use python server that helps you view your Facebook history message.
+        </big></p>
+
+        <form target="paypal" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+          <input type="hidden" name="cmd" value="_s-xclick">
+          <input type="hidden" name="hosted_button_id" value="8BSE6ST5DJF7E">
+          <table>
+            <input type="hidden" name="on0" value="Donation"><h3>Donation</big></h3></td>
+            <select name="os0">
+              <option value="Buy me a Beer">Buy me a Beer $3.00 USD</option>
+              <option value="Buy me a Pizza">Buy me a Pizza $5.00 USD</option>
+              <option value="Buy me a Dinner">Buy me a Dinner $10.00 USD</option>
+            </select> </td></tr>
+          </table>
+          <input type="hidden" name="currency_code" value="USD">
+          <input type="image" src="https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal － 更安全、更簡單的線上付款方式！">
+          <img alt="" border="0" src="https://www.paypalobjects.com/zh_TW/i/scr/pixel.gif" width="1" height="1">
+        </form></br>
+
         <p>
         <a href="#download" class="btn btn-success btn-large">Download</a>
         <a href="#features" class="btn btn-primary btn-large">Features</a> 
@@ -68,7 +91,6 @@ ga('send', 'pageview');
 
     <!-- download page -->
     <h1 id="download">Download</h1>
-
     <div class="row" id="downloadlist">
     </div>
 
@@ -99,11 +121,30 @@ ga('send', 'pageview');
 
     <!-- Q&A page -->
     <h1 id="QA">Q&A</h1>
+
     <h3>There are some common questions listed below. </h3>
-    <button class="btn btn-block" data-toggle="collapse" data-target="#demo">
-      Question: Why 
+
+    <button class="btn btn-block question" data-toggle="collapse" data-target="#question1">
+      Question: In your Facebook Setting page, Facebook allows you to download "a copy of what you've shared on Facebook"
     </button>
-    <div id="demo" class="collapse">
+    <div id="question1" class="collapse answer">
+      <del>Yeah, neither do I.</del></br>
+    </div>
+    <button class="btn btn-block question" data-toggle="collapse" data-target="#question2">
+      Question: I don't know how to use it.
+    </button>
+    <div id="question2" class="collapse answer">
+      <del>Yeah, neither do I.</del></br>
+      Well, simply download a copy of your Facebook message. Run the program
+    </div>
+
+    <button class="btn btn-block question" data-toggle="collapse" data-target="#question3">
+      Question: Why do I need to download 'copy of my facebook' to view history message
+    </button>
+    <div id="question3" class="collapse answer">
+      Answer: Since Facebook does not open message API, this is the only way to retrieve your history message.</br>
+      (except the way that open a message page and press your "Home" key with weight for 3 days)</br>
+      I believe there will be many better service to view your message if Facebook open message API.
     </div>
 
     </br>

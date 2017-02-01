@@ -40,10 +40,10 @@ class dbSqlite3Test(unittest.TestCase):
     def testFriend(self):
         insertnum = random.randrange(10, 20)
         friends = [self.strgen() for _ in range(insertnum)]
+        friendlist = [(self.userid, friend, friend) for friend in friends]
 
         # insert friend and check exist
-        for friend in friends:
-            self.database.insertFriend(self.userid, friend, friend)
+        self.database.insertFriend(friendlist)
         result = self.database.getFriend(self.userid)
         self.assertEqual(len(result), insertnum)
 

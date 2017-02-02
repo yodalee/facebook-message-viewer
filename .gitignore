@@ -1,1 +1,10 @@
 *.swp
+# python
+*.pyc
+__pycache__
+# dir
+/static/
+/testcase/
+# database and log
+/user.db
+/log.txt

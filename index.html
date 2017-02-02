@@ -14,7 +14,7 @@ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
 ga('create', 'UA-77945119-3', 'auto');
-ga('send', 'pageview');
+ga('send', 'pageview', 'gitpage');
     </script>
     <link rel="shortcut icon" href="./img/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="./css/bootstrap-responsive.min.css" />
@@ -124,27 +124,33 @@ ga('send', 'pageview');
 
     <h3>There are some common questions listed below. </h3>
 
-    <button class="btn btn-block question" data-toggle="collapse" data-target="#question1">
-      Question: In your Facebook Setting page, Facebook allows you to download "a copy of what you've shared on Facebook"
-    </button>
-    <div id="question1" class="collapse answer">
-      <del>Yeah, neither do I.</del></br>
-    </div>
-    <button class="btn btn-block question" data-toggle="collapse" data-target="#question2">
-      Question: I don't know how to use it.
-    </button>
-    <div id="question2" class="collapse answer">
-      <del>Yeah, neither do I.</del></br>
-      Well, simply download a copy of your Facebook message. Run the program
-    </div>
-
     <button class="btn btn-block question" data-toggle="collapse" data-target="#question3">
       Question: Why do I need to download 'copy of my facebook' to view history message
     </button>
     <div id="question3" class="collapse answer">
-      Answer: Since Facebook does not open message API, this is the only way to retrieve your history message.</br>
+      <p class="answer">
+      Answer: Since Facebook does not open message API, this is the only way to retrieve your history message.
       (except the way that open a message page and press your "Home" key with weight for 3 days)</br>
-      I believe there will be many better service to view your message if Facebook open message API.
+      </p>
+    </div>
+
+    <button class="btn btn-block question" data-toggle="collapse" data-target="#question1">
+      Question: Why I have to download my copy in English? Can't I just use my language?
+    </button>
+    <div id="question1" class="collapse answer">
+      <p class="answer">
+      Since Facebook use different time-format in different language, currently Facebook Message Viewer only support English format.
+      </p>
+    </div>
+
+    <button class="btn btn-block question" data-toggle="collapse" data-target="#question2">
+      Question: Why some of my friend becomes 'long-number'@facebook.com?
+    </button>
+    <div id="question2" class="collapse answer">
+      <p class="answer">
+      The downloaded copy replace some username with their Facebook account (ex. 10000000000@facebook.com)</br>
+      You can click on the name and input any name you like.
+      </p>
     </div>
 
     </br>
